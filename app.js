@@ -1,1801 +1,2259 @@
 "use strict";
 
-const STORAGE_KEY = "catalogo-producao-shopee-v3";
+/*
+=========================================================
+ORGANIZADOR DE PRODUÇÃO SHOPEE / UPSELLER
+APP.JS - PARTE 1/3
 
-const DEFAULT_CATALOG = [
-  {
-    modelId: "292651491139",
-    model: "Redonda",
-    color: "Preto",
-    size: "30 cm",
-    pieces: 1,
-    detail: "Unitária"
-  },
-  {
-    modelId: "292651491140",
-    model: "Redonda",
-    color: "Branco",
-    size: "30 cm",
-    pieces: 1,
-    detail: "Unitária"
-  },
+Responsável por:
+- Cadastro dos produtos
+- Leitura PDF UpSeller
+- Leitura Excel/CSV Shopee
+- Preparação dos dados
 
-  {
-    modelId: "430463424666",
-    model: "Redonda",
-    color: "Branco",
-    size: "20 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "430463424667",
-    model: "Redonda",
-    color: "Preto",
-    size: "20 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "430463424668",
-    model: "Redonda",
-    color: "Branco",
-    size: "25 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "430463424669",
-    model: "Redonda",
-    color: "Branco",
-    size: "30 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "430463424670",
-    model: "Redonda",
-    color: "Preto",
-    size: "30 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "430463424671",
-    model: "Redonda",
-    color: "Preto",
-    size: "25 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "216387569151",
-    model: "Redonda",
-    color: "Branco",
-    size: "16 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
+=========================================================
+*/
 
-  {
-    modelId: "360463511208",
-    model: "Diamante",
-    color: "Branco",
-    size: "20 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "360463511209",
-    model: "Diamante",
-    color: "Branco",
-    size: "25 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "360463511210",
-    model: "Diamante",
-    color: "Branco",
-    size: "30 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "360463511211",
-    model: "Diamante",
-    color: "Preto",
-    size: "20 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "360463511212",
-    model: "Diamante",
-    color: "Preto",
-    size: "25 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
-  {
-    modelId: "360463511213",
-    model: "Diamante",
-    color: "Preto",
-    size: "30 cm",
-    pieces: 3,
-    detail: "Kit 3"
-  },
 
-  {
-    modelId: "396026195582",
-    model: "Redonda",
-    color: "Branco",
-    size: "30 cm",
-    pieces: 2,
-    detail: "Combo 2 com LED"
-  }
-];
+/*
+=========================================================
+PDF.JS CONFIGURAÇÃO
+=========================================================
+*/
 
-const TITLE_RULES = [
-  {
-    titleIncludes: [
-      "kit 3 prateleiras de canto meia lua"
-    ],
-    variations: {
-      "branco 20 cm": {
-        model: "Redonda",
-        color: "Branco",
-        size: "20 cm",
-        pieces: 3
-      },
-      "preto 20 cm": {
-        model: "Redonda",
-        color: "Preto",
-        size: "20 cm",
-        pieces: 3
-      },
-      "branco 25 cm": {
+if (window.pdfjsLib) {
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+}
+
+
+
+/*
+=========================================================
+CATÁLOGO DOS PRODUTOS
+
+A chave principal é o SKU do UpSeller.
+
+SKU
+↓
+Produto físico
+↓
+Quantidade de peças
+
+=========================================================
+*/
+
+
+const CATALOG = {
+
+
+    /*
+    ============================
+    REDONDA UNITÁRIA
+    ============================
+    */
+
+
+    "228792214684": {
+
         model: "Redonda",
         color: "Branco",
         size: "25 cm",
-        pieces: 3
-      },
-      "preto 25 cm": {
-        model: "Redonda",
-        color: "Preto",
-        size: "25 cm",
-        pieces: 3
-      },
-      "branco 30 cm": {
-        model: "Redonda",
-        color: "Branco",
-        size: "30 cm",
-        pieces: 3
-      },
-      "preto 30 cm": {
-        model: "Redonda",
-        color: "Preto",
-        size: "30 cm",
-        pieces: 3
-      },
-      "branco 16 cm": {
-        model: "Redonda",
-        color: "Branco",
-        size: "16 cm",
-        pieces: 3
-      }
-    }
-  },
+        pieces: 1,
+        detail: "Unitária"
 
-  {
-    titleIncludes: [
-      "kit 3 prateleiras canto quina diamante",
-      "kit 3 prateleiras de canto diamante"
-    ],
-    variations: {
-      "branco 20 cm": {
-        model: "Diamante",
-        color: "Branco",
-        size: "20 cm",
-        pieces: 3
-      },
-      "preto 20 cm": {
-        model: "Diamante",
-        color: "Preto",
-        size: "20 cm",
-        pieces: 3
-      },
-      "branco 25 cm": {
-        model: "Diamante",
-        color: "Branco",
-        size: "25 cm",
-        pieces: 3
-      },
-      "preto 25 cm": {
-        model: "Diamante",
-        color: "Preto",
-        size: "25 cm",
-        pieces: 3
-      },
-      "branco 30 cm": {
-        model: "Diamante",
-        color: "Branco",
-        size: "30 cm",
-        pieces: 3
-      },
-      "preto 30 cm": {
-        model: "Diamante",
-        color: "Preto",
-        size: "30 cm",
-        pieces: 3
-      }
-    }
-  },
+    },
 
-  {
-    titleIncludes: [
-      "prateleira de canto flutuante decorativa mdf 30 cm"
-    ],
-    variations: {
-      "branco": {
+
+    "228792214678": {
+
         model: "Redonda",
         color: "Branco",
         size: "30 cm",
-        pieces: 1
-      },
-      "branca": {
-        model: "Redonda",
-        color: "Branco",
-        size: "30 cm",
-        pieces: 1
-      },
-      "preto": {
+        pieces: 1,
+        detail: "Unitária"
+
+    },
+
+
+    "292651491139": {
+
         model: "Redonda",
         color: "Preto",
         size: "30 cm",
-        pieces: 1
-      }
-    }
-  },
+        pieces: 1,
+        detail: "Unitária"
 
-  {
-    titleIncludes: [
-      "kit 2 prateleiras de canto"
-    ],
-    variations: {
-      "branco 15 cm": {
+    },
+
+
+    "292651491140": {
+
+        model: "Redonda",
+        color: "Branco",
+        size: "30 cm",
+        pieces: 1,
+        detail: "Unitária"
+
+    },
+
+
+
+    /*
+    ============================
+    KIT 2 REDONDA
+    ============================
+    */
+
+
+    "209613874440": {
+
+        model: "Redonda",
+        color: "Branco",
+        size: "30 cm",
+        pieces: 2,
+        detail: "Kit 2"
+
+    },
+
+
+    "445867399988": {
+
         model: "Redonda",
         color: "Branco",
         size: "15 cm",
-        pieces: 2
-      },
-      "branco 20 cm": {
+        pieces: 2,
+        detail: "Kit 2"
+
+    },
+
+
+
+    /*
+    ============================
+    KIT 3 REDONDA
+    ============================
+    */
+
+
+    "430463424666": {
+
         model: "Redonda",
         color: "Branco",
         size: "20 cm",
-        pieces: 2
-      },
-      "branco 25 cm": {
-        model: "Redonda",
-        color: "Branco",
-        size: "25 cm",
-        pieces: 2
-      },
-      "branco 30 cm": {
-        model: "Redonda",
-        color: "Branco",
-        size: "30 cm",
-        pieces: 2
-      },
-      "preto 20 cm": {
+        pieces: 3,
+        detail: "Kit 3"
+
+    },
+
+
+    "430463424667": {
+
         model: "Redonda",
         color: "Preto",
         size: "20 cm",
-        pieces: 2
-      },
-      "preto 25 cm": {
-        model: "Redonda",
-        color: "Preto",
-        size: "25 cm",
-        pieces: 2
-      },
-      "preto 30 cm": {
-        model: "Redonda",
-        color: "Preto",
-        size: "30 cm",
-        pieces: 2
-      }
-    }
-  },
+        pieces: 3,
+        detail: "Kit 3"
 
-  {
-    titleIncludes: [
-      "prateleira para quarto e banheiro kit 3"
-    ],
-    variations: {
-      "branco 25 cm": {
+    },
+
+
+    "430463424668": {
+
         model: "Redonda",
         color: "Branco",
         size: "25 cm",
-        pieces: 1
-      },
-      "branco 30 cm": {
+        pieces: 3,
+        detail: "Kit 3"
+
+    },
+
+
+    "430463424669": {
+
         model: "Redonda",
         color: "Branco",
         size: "30 cm",
-        pieces: 1
-      }
-    }
-  },
+        pieces: 3,
+        detail: "Kit 3"
 
-  {
-    titleIncludes: [
-      "3 ganchos penduradores"
-    ],
-    variations: {
-      "branco": {
-        model: "Gancho",
-        color: "Branco",
-        size: "",
-        pieces: 3
-      },
-      "preto": {
-        model: "Gancho",
+    },
+
+
+    "430463424670": {
+
+        model: "Redonda",
         color: "Preto",
-        size: "",
-        pieces: 3
-      }
-    }
-  }
-];
+        size: "30 cm",
+        pieces: 3,
+        detail: "Kit 3"
 
-let catalog = loadCatalog();
+    },
+
+
+    "430463424671": {
+
+        model: "Redonda",
+        color: "Preto",
+        size: "25 cm",
+        pieces: 3,
+        detail: "Kit 3"
+
+    },
+
+
+    "216387569151": {
+
+        model: "Redonda",
+        color: "Branco",
+        size: "16 cm",
+        pieces: 3,
+        detail: "Kit 3"
+
+    },
+
+
+
+    /*
+    ============================
+    DIAMANTE
+    ============================
+    */
+
+
+    "360463511208": {
+
+        model: "Diamante",
+        color: "Branco",
+        size: "20 cm",
+        pieces: 3,
+        detail: "Kit 3"
+
+    },
+
+
+    "360463511209": {
+
+        model: "Diamante",
+        color: "Branco",
+        size: "25 cm",
+        pieces: 3,
+        detail: "Kit 3"
+
+    },
+
+
+    "360463511210": {
+
+        model: "Diamante",
+        color: "Branco",
+        size: "30 cm",
+        pieces: 3,
+        detail: "Kit 3"
+
+    },
+
+
+    "360463511211": {
+
+        model: "Diamante",
+        color: "Preto",
+        size: "20 cm",
+        pieces: 3,
+        detail: "Kit 3"
+
+    },
+
+
+    "360463511212": {
+
+        model: "Diamante",
+        color: "Preto",
+        size: "25 cm",
+        pieces: 3,
+        detail: "Kit 3"
+
+    },
+
+
+    "360463511213": {
+
+        model: "Diamante",
+        color: "Preto",
+        size: "30 cm",
+        pieces: 3,
+        detail: "Kit 3"
+
+    }
+
+
+};
+
+
+
+/*
+=========================================================
+VARIÁVEIS GLOBAIS
+=========================================================
+*/
+
+
 let selectedFile = null;
-let lastRows = [];
 
-function element(id) {
-  return document.getElementById(id);
+let lastProduction = null;
+
+
+
+/*
+=========================================================
+FUNÇÕES BÁSICAS
+=========================================================
+*/
+
+
+function get(id){
+
+    return document.getElementById(id);
+
 }
 
-function setText(id, value) {
-  const target = element(id);
 
-  if (target) {
-    target.textContent = value;
-  }
+
+function setText(id,value){
+
+    const element = get(id);
+
+    if(element){
+
+        element.textContent = value;
+
+    }
+
 }
 
-function normalizeText(value) {
-  return String(value ?? "")
-    .trim()
-    .replace(/\s+/g, " ");
+
+
+function normalize(value){
+
+    return String(value ?? "")
+        .trim()
+        .replace(/\s+/g," ");
+
 }
 
-function normalizeSearch(value) {
-  return String(value ?? "")
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/branc0/g, "branco")
-    .replace(/\s+/g, " ");
+
+
+function searchText(value){
+
+    return String(value ?? "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/branc0/g,"branco")
+        .trim();
+
 }
 
-function onlyDigits(value) {
-  return String(value ?? "")
-    .replace(/\D/g, "");
+
+
+function digits(value){
+
+    return String(value ?? "")
+        .replace(/\D/g,"");
+
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/[&<>"']/g, (character) => {
-      const map = {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      };
 
-      return map[character];
+
+function safe(value){
+
+    return String(value ?? "")
+        .replace(/[&<>"']/g,function(char){
+
+            const map={
+
+                "&":"&amp;",
+                "<":"&lt;",
+                ">":"&gt;",
+                '"':"&quot;",
+                "'":"&#039;"
+
+            };
+
+            return map[char];
+
+        });
+
+}
+
+
+
+/*
+=========================================================
+LEITURA DO PDF UPSELLER
+=========================================================
+
+O PDF vem assim:
+
+Pedido
+Código interno
+Título quebrado em várias linhas
+SKU
+Quantidade
+
+=========================================================
+*/
+
+
+async function readPDF(file){
+
+
+    const buffer =
+        await file.arrayBuffer();
+
+
+
+    const pdf =
+        await pdfjsLib
+        .getDocument({
+
+            data:buffer
+
+        })
+        .promise;
+
+
+
+    let lines=[];
+
+
+
+    for(
+        let pageNumber=1;
+        pageNumber<=pdf.numPages;
+        pageNumber++
+    ){
+
+
+        const page =
+            await pdf.getPage(pageNumber);
+
+
+
+        const content =
+            await page.getTextContent();
+
+
+
+        const items =
+            content.items
+            .map(item=>{
+
+                return {
+
+                    text:item.str,
+
+                    x:item.transform[4],
+
+                    y:item.transform[5]
+
+                };
+
+            });
+
+
+
+        const rows={};
+
+
+
+        items.forEach(item=>{
+
+
+            const y =
+                Math.round(item.y);
+
+
+
+            if(!rows[y]){
+
+                rows[y]=[];
+
+            }
+
+
+            rows[y].push(item);
+
+
+
+        });
+
+
+
+        Object.values(rows)
+        .forEach(row=>{
+
+
+            row.sort((a,b)=>a.x-b.x);
+
+
+            const text =
+                row
+                .map(item=>item.text)
+                .join(" ")
+                .replace(/\s+/g," ")
+                .trim();
+
+
+
+            if(text){
+
+                lines.push(text);
+
+            }
+
+
+        });
+
+
+    }
+
+
+
+    return parseUpSeller(lines);
+
+
+}
+
+
+
+/*
+=========================================================
+PARSER DO PDF
+
+Transforma o PDF em pedidos
+
+=========================================================
+*/
+
+
+function parseUpSeller(lines){
+
+
+    const orders=[];
+
+
+    const orderRegex =
+        /^\d{12}[A-Z0-9]+$/;
+
+
+
+    const skuRegex =
+        /^\d{12}$/;
+
+
+
+    let current=null;
+
+
+
+    function save(){
+
+
+        if(
+            current &&
+            current.order &&
+            current.sku
+        ){
+
+
+            orders.push({
+
+                order:current.order,
+
+                sku:current.sku,
+
+                title:
+                    current.title.join(" "),
+
+                qty:
+                    current.qty || 1
+
+
+            });
+
+
+        }
+
+
+
+        current=null;
+
+
+    }
+
+
+
+
+
+    lines.forEach(line=>{
+
+
+        line =
+            normalize(line);
+
+
+
+        if(!line){
+
+            return;
+
+        }
+
+
+
+
+        if(
+            line.includes("Lista de") ||
+            line.includes("Titulo") ||
+            line.includes("Título") ||
+            line==="SKU"
+        ){
+
+            return;
+
+        }
+
+
+
+
+
+        if(orderRegex.test(line)){
+
+
+            save();
+
+
+            current={
+
+                order:line,
+
+                title:[],
+
+                sku:"",
+
+                qty:1
+
+            };
+
+
+            return;
+
+
+        }
+
+
+
+
+
+        if(!current){
+
+            return;
+
+        }
+
+
+
+
+
+        if(
+            /^UP[A-Z0-9]+$/i.test(line)
+        ){
+
+            return;
+
+        }
+
+
+
+
+
+        if(skuRegex.test(line)){
+
+
+            current.sku=line;
+
+            return;
+
+
+        }
+
+
+
+
+
+        if(
+            /^\d+$/.test(line)
+        ){
+
+
+            current.qty =
+                Number(line);
+
+
+            return;
+
+
+        }
+
+
+
+
+
+        current.title.push(line);
+
+
+
     });
+
+
+
+    save();
+
+
+
+    return orders;
+
+
 }
 
-function parseNumber(value) {
-  if (typeof value === "number") {
-    return Number.isFinite(value)
-      ? value
-      : 0;
-  }
+// =====================================================
+// PARTE 2/3
+// MOTOR DE PRODUÇÃO
+// =====================================================
 
-  let text = String(value ?? "")
-    .trim()
-    .replace(/\s/g, "")
-    .replace("R$", "");
 
-  if (text.includes(",")) {
-    text = text
-      .replace(/\./g, "")
-      .replace(",", ".");
-  }
+/*
+=========================================================
+CRIA ESTRUTURA DA PRODUÇÃO
+=========================================================
+*/
 
-  const parsed = Number(text);
+function createProduction(){
 
-  return Number.isFinite(parsed)
-    ? parsed
-    : 0;
+    return {
+
+        redonda:{
+
+            Branco:{
+
+                "15 cm":0,
+                "16 cm":0,
+                "20 cm":0,
+                "25 cm":0,
+                "30 cm":0
+
+            },
+
+            Preto:{
+
+                "15 cm":0,
+                "16 cm":0,
+                "20 cm":0,
+                "25 cm":0,
+                "30 cm":0
+
+            }
+
+        },
+
+
+        diamante:{
+
+            Branco:{
+
+                "20 cm":0,
+                "25 cm":0,
+                "30 cm":0
+
+            },
+
+            Preto:{
+
+                "20 cm":0,
+                "25 cm":0,
+                "30 cm":0
+
+            }
+
+        },
+
+
+        gancho:{
+
+            Branco:0,
+
+            Preto:0
+
+        },
+
+
+        outros:[]
+
+    };
+
 }
 
-function loadCatalog() {
-  try {
-    const stored = localStorage.getItem(
-      STORAGE_KEY
-    );
 
-    if (!stored) {
-      return structuredClone(DEFAULT_CATALOG);
-    }
 
-    const parsed = JSON.parse(stored);
 
-    return Array.isArray(parsed)
-      ? parsed
-      : structuredClone(DEFAULT_CATALOG);
-  } catch (error) {
-    console.error(error);
+/*
+=========================================================
+PROCESSA PEDIDOS
+=========================================================
 
-    return structuredClone(DEFAULT_CATALOG);
-  }
+Entrada:
+
+[
+ {
+  sku:"430463424669",
+  qty:2
+ }
+]
+
+
+Saída:
+
+Redonda
+Branco
+30 cm = 6
+
+
+=========================================================
+*/
+
+
+function calculateProduction(rows){
+
+
+    const production =
+        createProduction();
+
+
+    let totalPieces=0;
+
+
+    let reviews=[];
+
+
+
+    rows.forEach(order=>{
+
+
+        const product =
+            CATALOG[order.sku];
+
+
+
+        /*
+        SKU não cadastrado
+        */
+
+
+        if(!product){
+
+
+            reviews.push({
+
+                ...order,
+
+                reason:
+                "SKU não cadastrado"
+
+            });
+
+
+            return;
+
+        }
+
+
+
+
+        const quantity =
+            Number(order.qty) || 1;
+
+
+
+        const pieces =
+            quantity *
+            product.pieces;
+
+
+
+        totalPieces += pieces;
+
+
+
+        /*
+        REDONDA
+        */
+
+
+        if(product.model==="Redonda"){
+
+
+            production
+            .redonda[product.color]
+            [product.size] += pieces;
+
+
+            return;
+
+
+        }
+
+
+
+
+
+        /*
+        DIAMANTE
+        */
+
+
+        if(product.model==="Diamante"){
+
+
+            production
+            .diamante[product.color]
+            [product.size] += pieces;
+
+
+            return;
+
+
+        }
+
+
+
+
+
+        /*
+        GANCHO
+        */
+
+
+        if(product.model==="Gancho"){
+
+
+            production
+            .gancho[product.color]
+            += pieces;
+
+
+            return;
+
+
+        }
+
+
+
+
+
+        /*
+        OUTROS
+        */
+
+
+        production.outros.push({
+
+            nome:
+            product.description,
+
+            quantidade:
+            pieces
+
+        });
+
+
+
+    });
+
+
+
+
+
+    return {
+
+        production,
+
+        totalPieces,
+
+        reviews
+
+    };
+
+
 }
 
-function saveCatalog() {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(catalog)
-  );
 
-  renderCatalog();
-}
 
-function normalizeColumnName(value) {
-  return normalizeSearch(value)
-    .replace(/[º°]/g, "")
-    .replace(/[._-]/g, " ");
-}
 
-function findColumn(row, exactNames, partialNames = []) {
-  const entries = Object.entries(row);
 
-  const normalizedExact = exactNames.map(
-    normalizeColumnName
-  );
+/*
+=========================================================
+LEITURA DE EXCEL / CSV
+=========================================================
+*/
 
-  for (const [name, value] of entries) {
-    if (
-      normalizedExact.includes(
-        normalizeColumnName(name)
-      ) &&
-      value !== ""
-    ) {
-      return value;
-    }
-  }
 
-  const normalizedPartial = partialNames.map(
-    normalizeColumnName
-  );
+async function readExcel(file){
 
-  for (const [name, value] of entries) {
-    const normalizedName =
-      normalizeColumnName(name);
 
-    const match = normalizedPartial.some(
-      (partial) => {
-        return normalizedName.includes(partial);
-      }
-    );
+    const buffer =
+        await file.arrayBuffer();
 
-    if (match && value !== "") {
-      return value;
-    }
-  }
 
-  return "";
-}
 
-function normalizeRow(row, index) {
-  const order = normalizeText(
-    findColumn(
-      row,
-      [
-        "ID do pedido",
-        "Nº de Pedido",
-        "Número do pedido",
-        "Order ID"
-      ],
-      [
-        "id do pedido",
-        "numero do pedido"
-      ]
-    )
-  );
+    const workbook =
+        XLSX.read(buffer,{
 
-  const title = normalizeText(
-    findColumn(
-      row,
-      [
-        "Nome do Produto",
-        "Título do produto",
-        "Título & Variação"
-      ],
-      [
-        "nome do produto",
-        "titulo"
-      ]
-    )
-  );
+            type:"array"
 
-  const variation = normalizeText(
-    findColumn(
-      row,
-      [
-        "Nome da Variação",
-        "Variação",
-        "Variacao"
-      ],
-      [
-        "nome da variacao",
-        "variacao"
-      ]
-    )
-  );
+        });
 
-  const quantityRaw = findColumn(
-    row,
-    [
-      "Quantidade",
-      "Qtd.",
-      "Qtd",
-      "Quantity"
-    ]
-  );
 
-  const quantity = Math.floor(
-    parseNumber(quantityRaw)
-  );
 
-  const modelIdRaw = findColumn(
-    row,
-    [
-      "Model ID",
-      "ID do Modelo",
-      "ID da Variação",
-      "ID da Variacao",
-      "SKU",
-      "Número de referência SKU",
-      "Numero de referencia SKU"
-    ],
-    [
-      "model id",
-      "id do modelo",
-      "referencia sku"
-    ]
-  );
+    const sheet =
+        workbook.Sheets[
+            workbook.SheetNames[0]
+        ];
 
-  const status = normalizeText(
-    findColumn(
-      row,
-      [
-        "Status do pedido",
-        "Status",
-        "Situação do pedido"
-      ],
-      [
-        "status do pedido",
-        "situacao"
-      ]
-    )
-  );
 
-  return {
-    rowNumber: index + 1,
-    order,
-    title,
-    variation,
-    qty: quantity,
-    modelId: onlyDigits(modelIdRaw),
-    status
-  };
-}
 
-function invalidStatus(status) {
-  const text = normalizeSearch(status);
+    const rows =
+        XLSX
+        .utils
+        .sheet_to_json(
+            sheet,
+            {
+                defval:""
+            }
+        );
 
-  if (!text) {
-    return false;
-  }
 
-  return [
-    "cancelado",
-    "cancelada",
-    "reembolsado",
-    "reembolsada",
-    "devolvido",
-    "devolvida",
-    "pagamento falhou"
-  ].some((invalid) => {
-    return text.includes(invalid);
-  });
-}
 
-function findByModelId(modelId) {
-  if (!modelId) {
-    return null;
-  }
+    return rows.map(row=>{
 
-  return catalog.find((product) => {
-    return product.modelId === modelId;
-  }) || null;
-}
 
-function findByTitleAndVariation(row) {
-  const normalizedTitle =
-    normalizeSearch(row.title);
-
-  const normalizedVariation =
-    normalizeSearch(row.variation);
-
-  for (const rule of TITLE_RULES) {
-    const titleMatches =
-      rule.titleIncludes.some((text) => {
-        return normalizedTitle.includes(text);
-      });
-
-    if (!titleMatches) {
-      continue;
-    }
-
-    const directMatch =
-      rule.variations[normalizedVariation];
-
-    if (directMatch) {
-      return {
-        modelId: "",
-        detail: "Regra por título e variação",
-        ...directMatch
-      };
-    }
-
-    for (
-      const [
-        variationName,
-        product
-      ] of Object.entries(rule.variations)
-    ) {
-      if (
-        normalizedVariation.includes(
-          variationName
-        )
-      ) {
         return {
-          modelId: "",
-          detail: "Regra por título e variação",
-          ...product
+
+
+            order:
+
+            row["ID do pedido"] ||
+            row["Nº de Pedido"] ||
+            row["Pedido"] ||
+            "",
+
+
+
+            sku:
+
+            digits(
+
+                row["SKU"] ||
+                row["Número de referência SKU"] ||
+                row["Model ID"] ||
+                ""
+
+            ),
+
+
+
+            title:
+
+            row["Nome do Produto"] ||
+            "",
+
+
+
+            qty:
+
+            Number(
+
+                row["Quantidade"] ||
+                row["Qtd"] ||
+                1
+
+            )
+
+
+
         };
-      }
-    }
-  }
 
-  return null;
-}
 
-function resolveProduct(row) {
-  const productById = findByModelId(
-    row.modelId
-  );
-
-  if (productById) {
-    return {
-      source: "model-id",
-      product: productById
-    };
-  }
-
-  const productByText =
-    findByTitleAndVariation(row);
-
-  if (productByText) {
-    return {
-      source: "title-variation",
-      product: productByText
-    };
-  }
-
-  return {
-    source: "unknown",
-    product: null
-  };
-}
-
-function normalizedCategory(model) {
-  const text = normalizeSearch(model);
-
-  if (text.includes("diamante")) {
-    return "Diamante";
-  }
-
-  if (
-    text.includes("gancho") ||
-    text.includes("pendurador")
-  ) {
-    return "Gancho";
-  }
-
-  if (
-    text.includes("redonda") ||
-    text.includes("meia lua")
-  ) {
-    return "Redonda";
-  }
-
-  return "Outro";
-}
-
-function normalizedColor(color) {
-  const text = normalizeSearch(color);
-
-  if (text.includes("preto")) {
-    return "Preto";
-  }
-
-  if (
-    text.includes("branco") ||
-    text.includes("branca")
-  ) {
-    return "Branco";
-  }
-
-  return color || "Outra";
-}
-
-function processRows(rows) {
-  lastRows = rows;
-
-  const groups = new Map();
-  const review = [];
-  const recognized = [];
-  const orderIds = new Set();
-
-  rows.forEach((row) => {
-    if (
-      !row.order &&
-      !row.title &&
-      !row.variation &&
-      !row.modelId
-    ) {
-      return;
-    }
-
-    if (invalidStatus(row.status)) {
-      return;
-    }
-
-    if (row.qty <= 0) {
-      review.push({
-        ...row,
-        reason: "Quantidade inválida"
-      });
-
-      return;
-    }
-
-    if (row.order) {
-      orderIds.add(row.order);
-    }
-
-    const resolution = resolveProduct(row);
-
-    if (!resolution.product) {
-      review.push({
-        ...row,
-        reason: row.modelId
-          ? "ID/SKU não cadastrado"
-          : "Produto ainda não reconhecido"
-      });
-
-      return;
-    }
-
-    const product = resolution.product;
-
-    const pieces =
-      row.qty *
-      Number(product.pieces || 0);
-
-    if (pieces <= 0) {
-      review.push({
-        ...row,
-        reason: "Quantidade de peças não configurada"
-      });
-
-      return;
-    }
-
-    const category =
-      normalizedCategory(product.model);
-
-    const color =
-      normalizedColor(product.color);
-
-    const size =
-      normalizeText(product.size);
-
-    const groupKey = [
-      category,
-      color,
-      size
-    ].join("|");
-
-    groups.set(
-      groupKey,
-      (groups.get(groupKey) || 0) + pieces
-    );
-
-    recognized.push({
-      row,
-      product,
-      category,
-      color,
-      pieces,
-      source: resolution.source
     });
-  });
 
-  const totalPieces =
-    Array.from(groups.values())
-      .reduce((sum, value) => {
-        return sum + value;
-      }, 0);
 
-  setText(
-    "metricOrders",
-    orderIds.size ||
-      recognized.length +
-      review.length
-  );
 
-  setText(
-    "metricPieces",
-    totalPieces
-  );
-
-  setText(
-    "metricReview",
-    review.length
-  );
-
-  setText(
-    "reviewSummaryCount",
-    review.length
-  );
-
-  element("printBtn").disabled =
-    totalPieces === 0;
-
-  renderProduction(groups);
-  renderReview(review);
 }
 
-function emptyProduction() {
-  return {
-    round: {
-      white: {
-        16: 0,
-        20: 0,
-        25: 0,
-        30: 0
-      },
-      black: {
-        16: 0,
-        20: 0,
-        25: 0,
-        30: 0
-      }
-    },
 
-    diamond: {
-      white: {
-        20: 0,
-        25: 0,
-        30: 0
-      },
-      black: {
-        20: 0,
-        25: 0,
-        30: 0
-      }
-    },
 
-    hooks: {
-      white: 0,
-      black: 0
-    },
 
-    other: []
-  };
-}
+/*
+=========================================================
+PROCESSA ARQUIVO
+=========================================================
+*/
 
-function sizeNumber(size) {
-  return Number(onlyDigits(size)) || 0;
-}
 
-function renderProduction(groups) {
-  const production = emptyProduction();
+async function processFile(file){
 
-  for (const [key, quantity] of groups) {
-    const [
-      category,
-      color,
-      size
-    ] = key.split("|");
 
-    const categoryText =
-      normalizeSearch(category);
+    let rows=[];
 
-    const colorKey =
-      normalizeSearch(color).includes("preto")
-        ? "black"
-        : "white";
 
-    const measurement =
-      sizeNumber(size);
 
-    if (categoryText.includes("gancho")) {
-      production.hooks[colorKey] += quantity;
-      continue;
+    const name =
+        file.name.toLowerCase();
+
+
+
+    if(
+        name.endsWith(".pdf")
+    ){
+
+
+        rows =
+            await readPDF(file);
+
+
     }
 
-    if (categoryText.includes("diamante")) {
-      if (
-        Object.hasOwn(
-          production.diamond[colorKey],
-          measurement
-        )
-      ) {
-        production.diamond[colorKey][measurement] +=
-          quantity;
-      } else {
-        production.other.push({
-          name: `${category} ${color} ${size}`,
-          quantity
+
+    else{
+
+
+        rows =
+            await readExcel(file);
+
+
+    }
+
+
+
+
+
+    const result =
+        calculateProduction(rows);
+
+
+
+
+    lastProduction =
+        result;
+
+
+
+    renderProduction(
+        result.production,
+        result.totalPieces
+    );
+
+
+
+    renderReviews(
+        result.reviews
+    );
+
+
+
+    setText(
+        "ordersMetric",
+        rows.length
+    );
+
+
+
+    setText(
+        "piecesMetric",
+        result.totalPieces
+    );
+
+
+
+    setText(
+        "reviewMetric",
+        result.reviews.length
+    );
+
+
+
+}
+
+
+
+
+
+/*
+=========================================================
+RENDERIZA PRODUÇÃO NA TELA
+=========================================================
+*/
+
+
+function renderProduction(
+    production,
+    total
+){
+
+
+
+    /*
+    TOTAL REDONDA
+    */
+
+
+    let redondaTotal=0;
+
+
+    Object.values(
+        production.redonda
+    )
+    .forEach(color=>{
+
+
+        Object.values(color)
+        .forEach(q=>{
+
+
+            redondaTotal+=q;
+
+
         });
-      }
 
-      continue;
-    }
 
-    if (categoryText.includes("redonda")) {
-      if (
-        Object.hasOwn(
-          production.round[colorKey],
-          measurement
-        )
-      ) {
-        production.round[colorKey][measurement] +=
-          quantity;
-      } else {
-        production.other.push({
-          name: `${category} ${color} ${size}`,
-          quantity
-        });
-      }
-
-      continue;
-    }
-
-    production.other.push({
-      name: `${category} ${color} ${size}`,
-      quantity
     });
-  }
 
-  const roundWhiteTotal =
+
+
+
+
+    /*
+    TOTAL DIAMANTE
+    */
+
+
+    let diamanteTotal=0;
+
+
     Object.values(
-      production.round.white
-    ).reduce((sum, value) => sum + value, 0);
+        production.diamante
+    )
+    .forEach(color=>{
 
-  const roundBlackTotal =
-    Object.values(
-      production.round.black
-    ).reduce((sum, value) => sum + value, 0);
 
-  const roundTotal =
-    roundWhiteTotal +
-    roundBlackTotal;
+        Object.values(color)
+        .forEach(q=>{
 
-  const diamondWhiteTotal =
-    Object.values(
-      production.diamond.white
-    ).reduce((sum, value) => sum + value, 0);
 
-  const diamondBlackTotal =
-    Object.values(
-      production.diamond.black
-    ).reduce((sum, value) => sum + value, 0);
+            diamanteTotal+=q;
 
-  const diamondTotal =
-    diamondWhiteTotal +
-    diamondBlackTotal;
 
-  const hookTotal =
-    production.hooks.white +
-    production.hooks.black;
+        });
 
-  setText(
-    "roundWhite16",
-    production.round.white[16]
-  );
 
-  setText(
-    "roundWhite20",
-    production.round.white[20]
-  );
+    });
 
-  setText(
-    "roundWhite25",
-    production.round.white[25]
-  );
 
-  setText(
-    "roundWhite30",
-    production.round.white[30]
-  );
 
-  setText(
-    "roundBlack16",
-    production.round.black[16]
-  );
 
-  setText(
-    "roundBlack20",
-    production.round.black[20]
-  );
 
-  setText(
-    "roundBlack25",
-    production.round.black[25]
-  );
+    const ganchoTotal =
 
-  setText(
-    "roundBlack30",
-    production.round.black[30]
-  );
+        production.gancho.Branco +
 
-  setText(
-    "roundWhiteTotal",
-    roundWhiteTotal
-  );
+        production.gancho.Preto;
 
-  setText(
-    "roundBlackTotal",
-    roundBlackTotal
-  );
 
-  setText(
-    "roundTotal",
-    `${roundTotal} peças`
-  );
 
-  setText(
-    "diamondWhite20",
-    production.diamond.white[20]
-  );
 
-  setText(
-    "diamondWhite25",
-    production.diamond.white[25]
-  );
+    /*
+    MOSTRA REDONDA
+    */
 
-  setText(
-    "diamondWhite30",
-    production.diamond.white[30]
-  );
 
-  setText(
-    "diamondBlack20",
-    production.diamond.black[20]
-  );
+    [
+        "Branco",
+        "Preto"
 
-  setText(
-    "diamondBlack25",
-    production.diamond.black[25]
-  );
+    ]
+    .forEach(color=>{
 
-  setText(
-    "diamondBlack30",
-    production.diamond.black[30]
-  );
 
-  setText(
-    "diamondWhiteTotal",
-    diamondWhiteTotal
-  );
+        [
 
-  setText(
-    "diamondBlackTotal",
-    diamondBlackTotal
-  );
+            "15 cm",
+            "16 cm",
+            "20 cm",
+            "25 cm",
+            "30 cm"
 
-  setText(
-    "diamondTotal",
-    `${diamondTotal} peças`
-  );
+        ]
+        .forEach(size=>{
 
-  setText(
-    "hookWhite",
-    production.hooks.white
-  );
 
-  setText(
-    "hookBlack",
-    production.hooks.black
-  );
+            const id =
+            "round" +
+            color +
+            size.replace(" ","");
 
-  setText(
-    "hookTotal",
-    `${hookTotal} unidades`
-  );
 
-  renderOtherProducts(
-    production.other
-  );
+            setText(
 
-  const total =
-    roundTotal +
-    diamondTotal +
-    hookTotal +
-    production.other.reduce(
-      (sum, item) => {
-        return sum + item.quantity;
-      },
-      0
+                id,
+
+                production
+                .redonda[color][size]
+
+            );
+
+
+        });
+
+
+
+    });
+
+
+
+
+
+    setText(
+        "roundTotal",
+        redondaTotal+" peças"
     );
 
-  element("productionEmpty")
-    .classList
-    .toggle(
-      "hidden",
-      total > 0
+
+
+
+
+    /*
+    MOSTRA DIAMANTE
+    */
+
+
+    [
+        "Branco",
+        "Preto"
+
+    ]
+    .forEach(color=>{
+
+
+        [
+
+            "20 cm",
+            "25 cm",
+            "30 cm"
+
+        ]
+        .forEach(size=>{
+
+
+            const id =
+            "diamond" +
+            color +
+            size.replace(" ","");
+
+
+            setText(
+
+                id,
+
+                production
+                .diamante[color][size]
+
+            );
+
+
+        });
+
+
+    });
+
+
+
+
+
+    setText(
+
+        "diamondTotal",
+
+        diamanteTotal+" peças"
+
     );
 
-  element("productionResult")
-    .classList
-    .toggle(
-      "hidden",
-      total === 0
+
+
+
+
+    /*
+    GANCHOS
+    */
+
+
+    setText(
+
+        "hookWhite",
+
+        production.gancho.Branco
+
     );
 
-  element("roundPanel")
-    .classList
-    .toggle(
-      "hidden",
-      roundTotal === 0
+
+    setText(
+
+        "hookBlack",
+
+        production.gancho.Preto
+
     );
 
-  element("diamondPanel")
-    .classList
-    .toggle(
-      "hidden",
-      diamondTotal === 0
+
+    setText(
+
+        "hookTotal",
+
+        ganchoTotal+" unidades"
+
     );
 
-  element("hookPanel")
-    .classList
-    .toggle(
-      "hidden",
-      hookTotal === 0
-    );
+
+
+
+
+    /*
+    MOSTRA RESULTADO
+    */
+
+
+    if(total>0){
+
+
+        get("emptyState")
+        .classList
+        .add("hidden");
+
+
+
+        get("productionResult")
+        .classList
+        .remove("hidden");
+
+
+
+        get("roundPanel")
+        .classList
+        .remove("hidden");
+
+
+
+    }
+
+
+
 }
 
-function renderOtherProducts(items) {
-  const panel = element("otherPanel");
-  const container = element("otherProducts");
+// =====================================================
+// PARTE 3/3
+// INTERFACE + EVENTOS
+// =====================================================
 
-  container.innerHTML = "";
 
-  if (!items.length) {
-    panel.classList.add("hidden");
-    return;
-  }
 
-  const total = items.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
+/*
+=========================================================
+MOSTRA PRODUTOS COM ERRO
+=========================================================
+*/
 
-  setText(
-    "otherTotal",
-    `${total} unidades`
-  );
 
-  items.forEach((item) => {
-    const html = `
-      <div class="other-item">
-        <span>
-          ${escapeHtml(item.name)}
-        </span>
+function renderReviews(reviews){
 
-        <strong>
-          ${item.quantity}
-        </strong>
-      </div>
-    `;
 
-    container.insertAdjacentHTML(
-      "beforeend",
-      html
-    );
-  });
+    const body =
+        get("reviewBody");
 
-  panel.classList.remove("hidden");
-}
 
-function renderReview(review) {
-  const body = element("reviewBody");
+    if(!body){
 
-  body.innerHTML = "";
+        return;
 
-  if (!review.length) {
-    element("reviewEmpty")
-      .classList
-      .remove("hidden");
+    }
 
-    element("reviewWrap")
-      .classList
-      .add("hidden");
 
-    return;
-  }
+    body.innerHTML="";
 
-  element("reviewEmpty")
-    .classList
-    .add("hidden");
 
-  element("reviewWrap")
-    .classList
-    .remove("hidden");
 
-  review.forEach((row, index) => {
-    const html = `
-      <tr>
-        <td>${escapeHtml(row.order || "—")}</td>
+    if(reviews.length===0){
 
-        <td>${escapeHtml(row.title || "—")}</td>
 
-        <td>${escapeHtml(row.variation || "—")}</td>
+        const empty =
+            get("reviewEmpty");
 
-        <td>${escapeHtml(row.modelId || "Não encontrado")}</td>
 
-        <td>${row.qty || 0}</td>
+        if(empty){
 
-        <td>${escapeHtml(row.reason)}</td>
+            empty.classList.remove(
+                "hidden"
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+
+
+
+    const empty =
+        get("reviewEmpty");
+
+
+    if(empty){
+
+        empty.classList.add(
+            "hidden"
+        );
+
+    }
+
+
+
+
+
+    const table =
+        get("reviewTableWrapper");
+
+
+    if(table){
+
+        table.classList.remove(
+            "hidden"
+        );
+
+    }
+
+
+
+
+
+    reviews.forEach(item=>{
+
+
+        const tr =
+            document.createElement(
+                "tr"
+            );
+
+
+
+        tr.innerHTML = `
 
         <td>
-          <button
-            type="button"
-            class="small-button configure-button"
-            data-index="${index}"
-          >
-            Cadastrar
-          </button>
+        ${safe(item.order)}
         </td>
-      </tr>
-    `;
 
-    body.insertAdjacentHTML(
-      "beforeend",
-      html
-    );
-  });
+        <td>
+        ${safe(item.sku)}
+        </td>
 
-  body
-    .querySelectorAll(".configure-button")
-    .forEach((button) => {
-      button.addEventListener(
+        <td>
+        ${safe(item.title)}
+        </td>
+
+        <td>
+        ${safe(item.qty)}
+        </td>
+
+        <td class="warning">
+        ${safe(item.reason)}
+        </td>
+
+        `;
+
+
+
+        body.appendChild(tr);
+
+
+    });
+
+
+}
+
+
+
+
+
+
+
+/*
+=========================================================
+SELEÇÃO DO ARQUIVO
+=========================================================
+*/
+
+
+function selectFile(file){
+
+
+    selectedFile=file;
+
+
+
+    const button =
+        get("processButton");
+
+
+
+    if(button){
+
+        button.disabled =
+            !file;
+
+    }
+
+
+
+    const status =
+        get("fileStatus");
+
+
+
+    if(status){
+
+        status.textContent =
+            file
+
+            ?
+
+            "Arquivo selecionado: "
+            +
+            file.name
+
+            :
+
+            "Nenhum arquivo selecionado.";
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+/*
+=========================================================
+BOTÃO PROCESSAR
+=========================================================
+*/
+
+
+function setupProcess(){
+
+
+
+    const button =
+        get("processButton");
+
+
+
+    if(!button){
+
+        return;
+
+    }
+
+
+
+    button.addEventListener(
         "click",
-        () => {
-          const row =
-            review[
-              Number(button.dataset.index)
+        async function(){
+
+
+
+            if(!selectedFile){
+
+                alert(
+                    "Selecione um arquivo primeiro."
+                );
+
+                return;
+
+            }
+
+
+
+
+
+            try{
+
+
+                button.disabled=true;
+
+
+                button.textContent =
+                    "Processando...";
+
+
+
+                await processFile(
+                    selectedFile
+                );
+
+
+
+                button.textContent =
+                    "Processar arquivo";
+
+
+
+                button.disabled=false;
+
+
+
+            }
+
+            catch(error){
+
+
+                console.error(
+                    error
+                );
+
+
+                alert(
+                    "Erro ao processar arquivo."
+                );
+
+
+                button.disabled=false;
+
+
+                button.textContent =
+                    "Processar arquivo";
+
+
+            }
+
+
+
+        }
+    );
+
+
+}
+
+
+
+
+
+
+
+
+
+/*
+=========================================================
+INPUT DE ARQUIVO
+=========================================================
+*/
+
+
+function setupFileInput(){
+
+
+
+    const input =
+        get("fileInput");
+
+
+
+    if(!input){
+
+        return;
+
+    }
+
+
+
+    input.addEventListener(
+        "change",
+        function(event){
+
+
+            const file =
+                event.target.files[0];
+
+
+
+            selectFile(file);
+
+
+
+        }
+    );
+
+
+}
+
+
+
+
+
+
+
+
+
+/*
+=========================================================
+ARRASTAR ARQUIVO
+=========================================================
+*/
+
+
+function setupDropzone(){
+
+
+    const zone =
+        get("dropzone");
+
+
+
+    if(!zone){
+
+        return;
+
+    }
+
+
+
+
+    [
+        "dragenter",
+        "dragover"
+
+    ]
+    .forEach(event=>{
+
+
+        zone.addEventListener(
+            event,
+            function(e){
+
+                e.preventDefault();
+
+
+                zone.classList.add(
+                    "dragging"
+                );
+
+
+            }
+        );
+
+
+    });
+
+
+
+
+
+    [
+        "dragleave",
+        "drop"
+
+    ]
+    .forEach(event=>{
+
+
+        zone.addEventListener(
+            event,
+            function(e){
+
+                e.preventDefault();
+
+
+                zone.classList.remove(
+                    "dragging"
+                );
+
+
+            }
+        );
+
+
+    });
+
+
+
+
+
+    zone.addEventListener(
+        "drop",
+        function(event){
+
+
+            const file =
+                event.dataTransfer
+                .files[0];
+
+
+
+            if(file){
+
+
+                selectFile(file);
+
+
+            }
+
+
+
+        }
+    );
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/*
+=========================================================
+BOTÃO LIMPAR
+=========================================================
+*/
+
+
+function setupClear(){
+
+
+    const button =
+        get("clearButton");
+
+
+
+    if(!button){
+
+        return;
+
+    }
+
+
+
+    button.addEventListener(
+        "click",
+        function(){
+
+
+
+            selectedFile=null;
+
+
+
+            const input =
+                get("fileInput");
+
+
+
+            if(input){
+
+                input.value="";
+
+            }
+
+
+
+
+            const status =
+                get("fileStatus");
+
+
+            if(status){
+
+                status.textContent =
+                "Nenhum arquivo selecionado.";
+
+            }
+
+
+
+
+            get("productionResult")
+            .classList
+            .add(
+                "hidden"
+            );
+
+
+
+            get("emptyState")
+            .classList
+            .remove(
+                "hidden"
+            );
+
+
+
+
+        }
+    );
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+/*
+=========================================================
+BOTÃO IMPRIMIR
+=========================================================
+*/
+
+
+function setupPrint(){
+
+
+    const button =
+        get("printButton");
+
+
+
+    if(!button){
+
+        return;
+
+    }
+
+
+
+    button.addEventListener(
+        "click",
+        function(){
+
+
+            window.print();
+
+
+        }
+    );
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/*
+=========================================================
+BOTÃO EXEMPLO
+=========================================================
+*/
+
+
+function setupDemo(){
+
+
+    const button =
+        get("demoButton");
+
+
+
+    if(!button){
+
+        return;
+
+    }
+
+
+
+    button.addEventListener(
+        "click",
+        function(){
+
+
+
+            const demo=[
+
+
+
+                {
+
+                order:
+                "DEMO001",
+
+                sku:
+                "430463424669",
+
+                title:
+                "Kit 3 Redonda",
+
+                qty:2
+
+
+                },
+
+
+
+                {
+
+                order:
+                "DEMO002",
+
+                sku:
+                "292651491140",
+
+                title:
+                "Unitária",
+
+                qty:3
+
+
+                }
+
+
+
             ];
 
-          fillProductForm(row);
+
+
+
+            const result =
+                calculateProduction(
+                    demo
+                );
+
+
+
+
+            renderProduction(
+                result.production,
+                result.totalPieces
+            );
+
+
+
+
+            setText(
+                "ordersMetric",
+                demo.length
+            );
+
+
+
+            setText(
+                "piecesMetric",
+                result.totalPieces
+            );
+
+
+
         }
-      );
-    });
-}
-
-function fillProductForm(row) {
-  element("modelId").value =
-    row.modelId || "";
-
-  element("detail").value =
-    [
-      row.title,
-      row.variation
-    ]
-      .filter(Boolean)
-      .join(" — ");
-
-  document
-    .querySelectorAll(".details-box")[1]
-    .open = true;
-
-  element("model").focus();
-
-  element("catalogForm")
-    .scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
-}
-
-async function readSpreadsheet(file) {
-  if (!window.XLSX) {
-    throw new Error(
-      "A biblioteca de Excel não foi carregada. Atualize a página e verifique sua internet."
-    );
-  }
-
-  const buffer =
-    await file.arrayBuffer();
-
-  const workbook =
-    XLSX.read(buffer, {
-      type: "array"
-    });
-
-  if (!workbook.SheetNames.length) {
-    throw new Error(
-      "Nenhuma aba encontrada na planilha."
-    );
-  }
-
-  const sheetName =
-    workbook.SheetNames.find((name) => {
-      return normalizeSearch(name) === "orders";
-    }) ||
-    workbook.SheetNames[0];
-
-  const worksheet =
-    workbook.Sheets[sheetName];
-
-  const rawRows =
-    XLSX.utils.sheet_to_json(
-      worksheet,
-      {
-        defval: "",
-        raw: false
-      }
     );
 
-  if (!rawRows.length) {
-    throw new Error(
-      "A planilha não possui pedidos."
-    );
-  }
 
-  const rows = rawRows
-    .map(normalizeRow)
-    .filter((row) => {
-      return (
-        row.order ||
-        row.title ||
-        row.variation ||
-        row.modelId
-      );
-    });
 
-  if (!rows.length) {
-    throw new Error(
-      "Não foi possível localizar os pedidos."
-    );
-  }
-
-  return rows;
 }
 
-function selectFile(file) {
-  selectedFile = file || null;
 
-  element("processBtn").disabled =
-    !selectedFile;
 
-  element("fileStatus").textContent =
-    selectedFile
-      ? `Arquivo selecionado: ${selectedFile.name}`
-      : "Nenhum arquivo selecionado.";
-}
 
-function renderCatalog() {
-  const body = element("catalogBody");
 
-  body.innerHTML = "";
 
-  [...catalog]
-    .sort((a, b) => {
-      return a.modelId.localeCompare(
-        b.modelId,
-        "pt-BR",
-        {
-          numeric: true
-        }
-      );
-    })
-    .forEach((product) => {
-      const html = `
-        <tr>
-          <td>${escapeHtml(product.modelId)}</td>
-          <td>${escapeHtml(product.model)}</td>
-          <td>${escapeHtml(product.color)}</td>
-          <td>${escapeHtml(product.size || "—")}</td>
-          <td>${product.pieces}</td>
 
-          <td>
-            <button
-              type="button"
-              class="delete-button"
-              data-model-id="${escapeHtml(product.modelId)}"
-            >
-              Excluir
-            </button>
-          </td>
-        </tr>
-      `;
 
-      body.insertAdjacentHTML(
-        "beforeend",
-        html
-      );
-    });
 
-  body
-    .querySelectorAll(".delete-button")
-    .forEach((button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          const modelId =
-            button.dataset.modelId;
 
-          const confirmed = confirm(
-            `Excluir o cadastro ${modelId}?`
-          );
 
-          if (!confirmed) {
-            return;
-          }
+/*
+=========================================================
+INICIAR SISTEMA
+=========================================================
+*/
 
-          catalog = catalog.filter(
-            (product) => {
-              return product.modelId !==
-                modelId;
-            }
-          );
 
-          saveCatalog();
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
 
-          if (lastRows.length) {
-            processRows(lastRows);
-          }
-        }
-      );
-    });
-}
 
-element("fileInput")
-  .addEventListener(
-    "change",
-    (event) => {
-      selectFile(
-        event.target.files[0]
-      );
-    }
-  );
 
-element("processBtn")
-  .addEventListener(
-    "click",
-    async () => {
-      if (!selectedFile) {
-        return;
-      }
+        setupFileInput();
 
-      const button =
-        element("processBtn");
 
-      try {
-        button.disabled = true;
-        button.textContent =
-          "Processando...";
 
-        const rows =
-          await readSpreadsheet(
-            selectedFile
-          );
+        setupDropzone();
 
-        processRows(rows);
 
-        element("fileStatus")
-          .textContent =
-          `${rows.length} linha(s) analisada(s).`;
-      } catch (error) {
-        console.error(error);
-        alert(error.message);
-      } finally {
-        button.disabled = false;
-        button.textContent =
-          "Processar planilha";
-      }
-    }
-  );
 
-element("demoBtn")
-  .addEventListener(
-    "click",
-    () => {
-      processRows([
-        {
-          rowNumber: 1,
-          order: "DEMO-001",
-          title:
-            "Kit 3 Prateleiras de Canto Meia Lua",
-          variation: "BRANCO 30 CM",
-          qty: 2,
-          modelId: "430463424669",
-          status: "A enviar"
-        },
-        {
-          rowNumber: 2,
-          order: "DEMO-002",
-          title:
-            "Prateleira de Canto Flutuante Decorativa MDF 30 cm",
-          variation: "Branco",
-          qty: 4,
-          modelId: "292651491140",
-          status: "A enviar"
-        },
-        {
-          rowNumber: 3,
-          order: "DEMO-003",
-          title:
-            "Kit 3 Prateleiras Canto Quina Diamante",
-          variation: "PRETO 25 CM",
-          qty: 2,
-          modelId: "360463511212",
-          status: "A enviar"
-        },
-        {
-          rowNumber: 4,
-          order: "DEMO-004",
-          title:
-            "3 Ganchos Penduradores",
-          variation: "Branco",
-          qty: 3,
-          modelId: "",
-          status: "A enviar"
-        }
-      ]);
-    }
-  );
+        setupProcess();
 
-element("clearBtn")
-  .addEventListener(
-    "click",
-    () => {
-      selectedFile = null;
-      lastRows = [];
 
-      element("fileInput").value = "";
 
-      selectFile(null);
-      processRows([]);
-    }
-  );
+        setupClear();
 
-element("printBtn")
-  .addEventListener(
-    "click",
-    () => {
-      window.print();
-    }
-  );
 
-element("catalogForm")
-  .addEventListener(
-    "submit",
-    (event) => {
-      event.preventDefault();
 
-      const product = {
-        modelId: onlyDigits(
-          element("modelId").value
-        ),
+        setupPrint();
 
-        model:
-          element("model").value,
 
-        color:
-          element("color").value,
 
-        size: normalizeText(
-          element("size").value
-        ),
+        setupDemo();
 
-        pieces: Math.floor(
-          parseNumber(
-            element("piecesPerSale").value
-          )
-        ),
 
-        detail: normalizeText(
-          element("detail").value
-        )
-      };
 
-      if (!product.modelId) {
-        alert(
-          "Informe o Model ID ou SKU."
+        console.log(
+            "Sistema de produção carregado."
         );
 
-        return;
-      }
 
-      if (
-        !product.model ||
-        !product.color ||
-        product.pieces <= 0
-      ) {
-        alert(
-          "Preencha o produto, a cor e as peças por venda."
-        );
 
-        return;
-      }
-
-      const existingIndex =
-        catalog.findIndex((item) => {
-          return item.modelId ===
-            product.modelId;
-        });
-
-      if (existingIndex >= 0) {
-        catalog[existingIndex] =
-          product;
-      } else {
-        catalog.push(product);
-      }
-
-      saveCatalog();
-
-      event.target.reset();
-
-      if (lastRows.length) {
-        processRows(lastRows);
-      }
-
-      alert(
-        "Produto salvo com sucesso."
-      );
     }
-  );
-
-element("exportCatalogBtn")
-  .addEventListener(
-    "click",
-    () => {
-      const blob = new Blob(
-        [
-          JSON.stringify(
-            catalog,
-            null,
-            2
-          )
-        ],
-        {
-          type: "application/json"
-        }
-      );
-
-      const url =
-        URL.createObjectURL(blob);
-
-      const link =
-        document.createElement("a");
-
-      link.href = url;
-      link.download =
-        "catalogo-producao.json";
-
-      link.click();
-
-      URL.revokeObjectURL(url);
-    }
-  );
-
-element("resetCatalogBtn")
-  .addEventListener(
-    "click",
-    () => {
-      const confirmed = confirm(
-        "Restaurar o cadastro inicial? Os produtos adicionados manualmente serão apagados."
-      );
-
-      if (!confirmed) {
-        return;
-      }
-
-      catalog =
-        structuredClone(
-          DEFAULT_CATALOG
-        );
-
-      saveCatalog();
-
-      if (lastRows.length) {
-        processRows(lastRows);
-      }
-    }
-  );
-
-const dropzone =
-  element("dropzone");
-
-[
-  "dragenter",
-  "dragover"
-].forEach((eventName) => {
-  dropzone.addEventListener(
-    eventName,
-    (event) => {
-      event.preventDefault();
-
-      dropzone.classList.add(
-        "dragging"
-      );
-    }
-  );
-});
-
-[
-  "dragleave",
-  "drop"
-].forEach((eventName) => {
-  dropzone.addEventListener(
-    eventName,
-    (event) => {
-      event.preventDefault();
-
-      dropzone.classList.remove(
-        "dragging"
-      );
-    }
-  );
-});
-
-dropzone.addEventListener(
-  "drop",
-  (event) => {
-    const file =
-      event.dataTransfer.files[0];
-
-    if (!file) {
-      return;
-    }
-
-    selectFile(file);
-  }
 );
-
-renderCatalog();
-processRows([]);
