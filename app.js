@@ -1,1000 +1,199 @@
 "use strict";
 
-/*
-=========================================================
-ORGANIZADOR DE PRODUÇÃO SHOPEE / UPSELLER
-APP.JS - PARTE 1/3
-
-Responsável por:
-- Cadastro dos produtos
-- Leitura PDF UpSeller
-- Leitura Excel/CSV Shopee
-- Preparação dos dados
-
-=========================================================
-*/
+/* =====================================
+   PRODUÇÃO SHOPEE / UPSELLER
+===================================== */
 
 
-/*
-=========================================================
-PDF.JS CONFIGURAÇÃO
-=========================================================
-*/
+/* PDF WORKER */
+if(window.pdfjsLib){
 
-if (window.pdfjsLib) {
-
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 }
 
 
 
-/*
-=========================================================
-CATÁLOGO DOS PRODUTOS
-
-A chave principal é o SKU do UpSeller.
-
-SKU
-↓
-Produto físico
-↓
-Quantidade de peças
-
-=========================================================
-*/
-
-
-const CATALOG = {
-
-
-    /*
-    ============================
-    REDONDA UNITÁRIA
-    ============================
-    */
-
-
-    "228792214684": {
-
-        model: "Redonda",
-        color: "Branco",
-        size: "25 cm",
-        pieces: 1,
-        detail: "Unitária"
-
-    },
-
-
-    "228792214678": {
-
-        model: "Redonda",
-        color: "Branco",
-        size: "30 cm",
-        pieces: 1,
-        detail: "Unitária"
-
-    },
-
-
-    "292651491139": {
-
-        model: "Redonda",
-        color: "Preto",
-        size: "30 cm",
-        pieces: 1,
-        detail: "Unitária"
-
-    },
-
-
-    "292651491140": {
-
-        model: "Redonda",
-        color: "Branco",
-        size: "30 cm",
-        pieces: 1,
-        detail: "Unitária"
-
-    },
-
-
-
-    /*
-    ============================
-    KIT 2 REDONDA
-    ============================
-    */
-
-
-    "209613874440": {
-
-        model: "Redonda",
-        color: "Branco",
-        size: "30 cm",
-        pieces: 2,
-        detail: "Kit 2"
-
-    },
-
-
-    "445867399988": {
-
-        model: "Redonda",
-        color: "Branco",
-        size: "15 cm",
-        pieces: 2,
-        detail: "Kit 2"
-
-    },
-
-
-
-    /*
-    ============================
-    KIT 3 REDONDA
-    ============================
-    */
-
-
-    "430463424666": {
-
-        model: "Redonda",
-        color: "Branco",
-        size: "20 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "430463424667": {
-
-        model: "Redonda",
-        color: "Preto",
-        size: "20 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "430463424668": {
-
-        model: "Redonda",
-        color: "Branco",
-        size: "25 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "430463424669": {
-
-        model: "Redonda",
-        color: "Branco",
-        size: "30 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "430463424670": {
-
-        model: "Redonda",
-        color: "Preto",
-        size: "30 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "430463424671": {
-
-        model: "Redonda",
-        color: "Preto",
-        size: "25 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "216387569151": {
-
-        model: "Redonda",
-        color: "Branco",
-        size: "16 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-
-    /*
-    ============================
-    DIAMANTE
-    ============================
-    */
-
-
-    "360463511208": {
-
-        model: "Diamante",
-        color: "Branco",
-        size: "20 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "360463511209": {
-
-        model: "Diamante",
-        color: "Branco",
-        size: "25 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "360463511210": {
-
-        model: "Diamante",
-        color: "Branco",
-        size: "30 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "360463511211": {
-
-        model: "Diamante",
-        color: "Preto",
-        size: "20 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "360463511212": {
-
-        model: "Diamante",
-        color: "Preto",
-        size: "25 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    },
-
-
-    "360463511213": {
-
-        model: "Diamante",
-        color: "Preto",
-        size: "30 cm",
-        pieces: 3,
-        detail: "Kit 3"
-
-    }
-
+/* =========================
+CATÁLOGO SKU
+========================= */
+
+const produtos = {
+
+"228792214684":{
+modelo:"Redonda",
+cor:"Branco",
+medida:"25 cm",
+pecas:1
+},
+
+"228792214678":{
+modelo:"Redonda",
+cor:"Branco",
+medida:"30 cm",
+pecas:1
+},
+
+"292651491140":{
+modelo:"Redonda",
+cor:"Branco",
+medida:"30 cm",
+pecas:1
+},
+
+"209613874440":{
+modelo:"Redonda",
+cor:"Branco",
+medida:"30 cm",
+pecas:2
+},
+
+"445867399988":{
+modelo:"Redonda",
+cor:"Branco",
+medida:"15 cm",
+pecas:2
+},
+
+"430463424668":{
+modelo:"Redonda",
+cor:"Branco",
+medida:"25 cm",
+pecas:3
+},
+
+"430463424669":{
+modelo:"Redonda",
+cor:"Branco",
+medida:"30 cm",
+pecas:3
+},
+
+"360463511208":{
+modelo:"Diamante",
+cor:"Branco",
+medida:"20 cm",
+pecas:3
+},
+
+"360463511209":{
+modelo:"Diamante",
+cor:"Branco",
+medida:"25 cm",
+pecas:3
+},
+
+"360463511210":{
+modelo:"Diamante",
+cor:"Branco",
+medida:"30 cm",
+pecas:3
+},
+
+"360463511211":{
+modelo:"Diamante",
+cor:"Preto",
+medida:"20 cm",
+pecas:3
+},
+
+"360463511212":{
+modelo:"Diamante",
+cor:"Preto",
+medida:"25 cm",
+pecas:3
+},
+
+"360463511213":{
+modelo:"Diamante",
+cor:"Preto",
+medida:"30 cm",
+pecas:3
+}
 
 };
 
 
 
-/*
-=========================================================
-VARIÁVEIS GLOBAIS
-=========================================================
-*/
-
-
-let selectedFile = null;
-
-let lastProduction = null;
+let arquivoSelecionado=null;
 
 
 
-/*
-=========================================================
-FUNÇÕES BÁSICAS
-=========================================================
-*/
+function id(x){
 
-
-function get(id){
-
-    return document.getElementById(id);
+return document.getElementById(x);
 
 }
 
 
 
-function setText(id,value){
+function texto(id,value){
 
-    const element = get(id);
+let el=document.getElementById(id);
 
-    if(element){
+if(el){
 
-        element.textContent = value;
+el.textContent=value;
 
-    }
+}
 
 }
 
 
 
-function normalize(value){
-
-    return String(value ?? "")
-        .trim()
-        .replace(/\s+/g," ");
-
-}
+/* =========================
+LEITURA PDF
+========================= */
 
 
+async function lerPDF(file){
 
-function searchText(value){
-
-    return String(value ?? "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g,"")
-        .replace(/branc0/g,"branco")
-        .trim();
-
-}
+let buffer =
+await file.arrayBuffer();
 
 
-
-function digits(value){
-
-    return String(value ?? "")
-        .replace(/\D/g,"");
-
-}
+let pdf =
+await pdfjsLib.getDocument({
+data:buffer
+}).promise;
 
 
+let linhas=[];
 
-function safe(value){
 
-    return String(value ?? "")
-        .replace(/[&<>"']/g,function(char){
+for(
+let p=1;
+p<=pdf.numPages;
+p++
+){
 
-            const map={
+let pagina =
+await pdf.getPage(p);
 
-                "&":"&amp;",
-                "<":"&lt;",
-                ">":"&gt;",
-                '"':"&quot;",
-                "'":"&#039;"
 
-            };
+let conteudo =
+await pagina.getTextContent();
 
-            return map[char];
 
-        });
+conteudo.items.forEach(item=>{
+
+let t =
+item.str.trim();
+
+if(t){
+
+linhas.push(t);
 
 }
 
-
-
-/*
-=========================================================
-LEITURA DO PDF UPSELLER
-=========================================================
-
-O PDF vem assim:
-
-Pedido
-Código interno
-Título quebrado em várias linhas
-SKU
-Quantidade
-
-=========================================================
-*/
-
-
-async function readPDF(file){
-
-
-    const buffer =
-        await file.arrayBuffer();
-
-
-
-    const pdf =
-        await pdfjsLib
-        .getDocument({
-
-            data:buffer
-
-        })
-        .promise;
-
-
-
-    let lines=[];
-
-
-
-    for(
-        let pageNumber=1;
-        pageNumber<=pdf.numPages;
-        pageNumber++
-    ){
-
-
-        const page =
-            await pdf.getPage(pageNumber);
-
-
-
-        const content =
-            await page.getTextContent();
-
-
-
-        const items =
-            content.items
-            .map(item=>{
-
-                return {
-
-                    text:item.str,
-
-                    x:item.transform[4],
-
-                    y:item.transform[5]
-
-                };
-
-            });
-
-
-
-        const rows={};
-
-
-
-        items.forEach(item=>{
-
-
-            const y =
-                Math.round(item.y);
-
-
-
-            if(!rows[y]){
-
-                rows[y]=[];
-
-            }
-
-
-            rows[y].push(item);
-
-
-
-        });
-
-
-
-        Object.values(rows)
-        .forEach(row=>{
-
-
-            row.sort((a,b)=>a.x-b.x);
-
-
-            const text =
-                row
-                .map(item=>item.text)
-                .join(" ")
-                .replace(/\s+/g," ")
-                .trim();
-
-
-
-            if(text){
-
-                lines.push(text);
-
-            }
-
-
-        });
-
-
-    }
-
-
-
-    return parseUpSeller(lines);
+});
 
 
 }
 
 
-
-/*
-=========================================================
-PARSER DO PDF
-
-Transforma o PDF em pedidos
-
-=========================================================
-*/
-
-
-function parseUpSeller(lines){
-
-
-    const orders=[];
-
-
-    const orderRegex =
-        /^\d{12}[A-Z0-9]+$/;
-
-
-
-    const skuRegex =
-        /^\d{12}$/;
-
-
-
-    let current=null;
-
-
-
-    function save(){
-
-
-        if(
-            current &&
-            current.order &&
-            current.sku
-        ){
-
-
-            orders.push({
-
-                order:current.order,
-
-                sku:current.sku,
-
-                title:
-                    current.title.join(" "),
-
-                qty:
-                    current.qty || 1
-
-
-            });
-
-
-        }
-
-
-
-        current=null;
-
-
-    }
-
-
-
-
-
-    lines.forEach(line=>{
-
-
-        line =
-            normalize(line);
-
-
-
-        if(!line){
-
-            return;
-
-        }
-
-
-
-
-        if(
-            line.includes("Lista de") ||
-            line.includes("Titulo") ||
-            line.includes("Título") ||
-            line==="SKU"
-        ){
-
-            return;
-
-        }
-
-
-
-
-
-        if(orderRegex.test(line)){
-
-
-            save();
-
-
-            current={
-
-                order:line,
-
-                title:[],
-
-                sku:"",
-
-                qty:1
-
-            };
-
-
-            return;
-
-
-        }
-
-
-
-
-
-        if(!current){
-
-            return;
-
-        }
-
-
-
-
-
-        if(
-            /^UP[A-Z0-9]+$/i.test(line)
-        ){
-
-            return;
-
-        }
-
-
-
-
-
-        if(skuRegex.test(line)){
-
-
-            current.sku=line;
-
-            return;
-
-
-        }
-
-
-
-
-
-        if(
-            /^\d+$/.test(line)
-        ){
-
-
-            current.qty =
-                Number(line);
-
-
-            return;
-
-
-        }
-
-
-
-
-
-        current.title.push(line);
-
-
-
-    });
-
-
-
-    save();
-
-
-
-    return orders;
-
-
-}
-
-// =====================================================
-// PARTE 2/3
-// MOTOR DE PRODUÇÃO
-// =====================================================
-
-
-/*
-=========================================================
-CRIA ESTRUTURA DA PRODUÇÃO
-=========================================================
-*/
-
-function createProduction(){
-
-    return {
-
-        redonda:{
-
-            Branco:{
-
-                "15 cm":0,
-                "16 cm":0,
-                "20 cm":0,
-                "25 cm":0,
-                "30 cm":0
-
-            },
-
-            Preto:{
-
-                "15 cm":0,
-                "16 cm":0,
-                "20 cm":0,
-                "25 cm":0,
-                "30 cm":0
-
-            }
-
-        },
-
-
-        diamante:{
-
-            Branco:{
-
-                "20 cm":0,
-                "25 cm":0,
-                "30 cm":0
-
-            },
-
-            Preto:{
-
-                "20 cm":0,
-                "25 cm":0,
-                "30 cm":0
-
-            }
-
-        },
-
-
-        gancho:{
-
-            Branco:0,
-
-            Preto:0
-
-        },
-
-
-        outros:[]
-
-    };
-
-}
-
-
-
-
-/*
-=========================================================
-PROCESSA PEDIDOS
-=========================================================
-
-Entrada:
-
-[
- {
-  sku:"430463424669",
-  qty:2
- }
-]
-
-
-Saída:
-
-Redonda
-Branco
-30 cm = 6
-
-
-=========================================================
-*/
-
-
-function calculateProduction(rows){
-
-
-    const production =
-        createProduction();
-
-
-    let totalPieces=0;
-
-
-    let reviews=[];
-
-
-
-    rows.forEach(order=>{
-
-
-        const product =
-            CATALOG[order.sku];
-
-
-
-        /*
-        SKU não cadastrado
-        */
-
-
-        if(!product){
-
-
-            reviews.push({
-
-                ...order,
-
-                reason:
-                "SKU não cadastrado"
-
-            });
-
-
-            return;
-
-        }
-
-
-
-
-        const quantity =
-            Number(order.qty) || 1;
-
-
-
-        const pieces =
-            quantity *
-            product.pieces;
-
-
-
-        totalPieces += pieces;
-
-
-
-        /*
-        REDONDA
-        */
-
-
-        if(product.model==="Redonda"){
-
-
-            production
-            .redonda[product.color]
-            [product.size] += pieces;
-
-
-            return;
-
-
-        }
-
-
-
-
-
-        /*
-        DIAMANTE
-        */
-
-
-        if(product.model==="Diamante"){
-
-
-            production
-            .diamante[product.color]
-            [product.size] += pieces;
-
-
-            return;
-
-
-        }
-
-
-
-
-
-        /*
-        GANCHO
-        */
-
-
-        if(product.model==="Gancho"){
-
-
-            production
-            .gancho[product.color]
-            += pieces;
-
-
-            return;
-
-
-        }
-
-
-
-
-
-        /*
-        OUTROS
-        */
-
-
-        production.outros.push({
-
-            nome:
-            product.description,
-
-            quantidade:
-            pieces
-
-        });
-
-
-
-    });
-
-
-
-
-
-    return {
-
-        production,
-
-        totalPieces,
-
-        reviews
-
-    };
+return separarPedidos(linhas);
 
 
 }
@@ -1002,602 +201,107 @@ function calculateProduction(rows){
 
 
 
+function separarPedidos(linhas){
 
-/*
-=========================================================
-LEITURA DE EXCEL / CSV
-=========================================================
-*/
 
+let pedidos=[];
 
-async function readExcel(file){
 
+let atual=null;
 
-    const buffer =
-        await file.arrayBuffer();
 
 
+for(let linha of linhas){
 
-    const workbook =
-        XLSX.read(buffer,{
 
-            type:"array"
+linha =
+linha.trim();
 
-        });
 
 
+/* pedido */
 
-    const sheet =
-        workbook.Sheets[
-            workbook.SheetNames[0]
-        ];
-
-
-
-    const rows =
-        XLSX
-        .utils
-        .sheet_to_json(
-            sheet,
-            {
-                defval:""
-            }
-        );
-
-
-
-    return rows.map(row=>{
-
-
-        return {
-
-
-            order:
-
-            row["ID do pedido"] ||
-            row["Nº de Pedido"] ||
-            row["Pedido"] ||
-            "",
-
-
-
-            sku:
-
-            digits(
-
-                row["SKU"] ||
-                row["Número de referência SKU"] ||
-                row["Model ID"] ||
-                ""
-
-            ),
-
-
-
-            title:
-
-            row["Nome do Produto"] ||
-            "",
-
-
-
-            qty:
-
-            Number(
-
-                row["Quantidade"] ||
-                row["Qtd"] ||
-                1
-
-            )
-
-
-
-        };
-
-
-    });
-
-
-
-}
-
-
-
-
-/*
-=========================================================
-PROCESSA ARQUIVO
-=========================================================
-*/
-
-
-async function processFile(file){
-
-
-    let rows=[];
-
-
-
-    const name =
-        file.name.toLowerCase();
-
-
-
-    if(
-        name.endsWith(".pdf")
-    ){
-
-
-        rows =
-            await readPDF(file);
-
-
-    }
-
-
-    else{
-
-
-        rows =
-            await readExcel(file);
-
-
-    }
-
-
-
-
-
-    const result =
-        calculateProduction(rows);
-
-
-
-
-    lastProduction =
-        result;
-
-
-
-    renderProduction(
-        result.production,
-        result.totalPieces
-    );
-
-
-
-    renderReviews(
-        result.reviews
-    );
-
-
-
-    setText(
-        "ordersMetric",
-        rows.length
-    );
-
-
-
-    setText(
-        "piecesMetric",
-        result.totalPieces
-    );
-
-
-
-    setText(
-        "reviewMetric",
-        result.reviews.length
-    );
-
-
-
-}
-
-
-
-
-
-/*
-=========================================================
-RENDERIZA PRODUÇÃO NA TELA
-=========================================================
-*/
-
-
-function renderProduction(
-    production,
-    total
+if(
+/^260\d+[A-Z0-9]+$/i.test(linha)
 ){
 
 
+if(atual){
 
-    /*
-    TOTAL REDONDA
-    */
+pedidos.push(atual);
 
+}
 
-    let redondaTotal=0;
 
 
-    Object.values(
-        production.redonda
-    )
-    .forEach(color=>{
+atual={
 
+pedido:linha,
+sku:"",
+qtd:1
 
-        Object.values(color)
-        .forEach(q=>{
+};
 
 
-            redondaTotal+=q;
-
-
-        });
-
-
-    });
-
-
-
-
-
-    /*
-    TOTAL DIAMANTE
-    */
-
-
-    let diamanteTotal=0;
-
-
-    Object.values(
-        production.diamante
-    )
-    .forEach(color=>{
-
-
-        Object.values(color)
-        .forEach(q=>{
-
-
-            diamanteTotal+=q;
-
-
-        });
-
-
-    });
-
-
-
-
-
-    const ganchoTotal =
-
-        production.gancho.Branco +
-
-        production.gancho.Preto;
-
-
-
-
-    /*
-    MOSTRA REDONDA
-    */
-
-
-    [
-        "Branco",
-        "Preto"
-
-    ]
-    .forEach(color=>{
-
-
-        [
-
-            "15 cm",
-            "16 cm",
-            "20 cm",
-            "25 cm",
-            "30 cm"
-
-        ]
-        .forEach(size=>{
-
-
-            const id =
-            "round" +
-            color +
-            size.replace(" ","");
-
-
-            setText(
-
-                id,
-
-                production
-                .redonda[color][size]
-
-            );
-
-
-        });
-
-
-
-    });
-
-
-
-
-
-    setText(
-        "roundTotal",
-        redondaTotal+" peças"
-    );
-
-
-
-
-
-    /*
-    MOSTRA DIAMANTE
-    */
-
-
-    [
-        "Branco",
-        "Preto"
-
-    ]
-    .forEach(color=>{
-
-
-        [
-
-            "20 cm",
-            "25 cm",
-            "30 cm"
-
-        ]
-        .forEach(size=>{
-
-
-            const id =
-            "diamond" +
-            color +
-            size.replace(" ","");
-
-
-            setText(
-
-                id,
-
-                production
-                .diamante[color][size]
-
-            );
-
-
-        });
-
-
-    });
-
-
-
-
-
-    setText(
-
-        "diamondTotal",
-
-        diamanteTotal+" peças"
-
-    );
-
-
-
-
-
-    /*
-    GANCHOS
-    */
-
-
-    setText(
-
-        "hookWhite",
-
-        production.gancho.Branco
-
-    );
-
-
-    setText(
-
-        "hookBlack",
-
-        production.gancho.Preto
-
-    );
-
-
-    setText(
-
-        "hookTotal",
-
-        ganchoTotal+" unidades"
-
-    );
-
-
-
-
-
-    /*
-    MOSTRA RESULTADO
-    */
-
-
-    if(total>0){
-
-
-        get("emptyState")
-        .classList
-        .add("hidden");
-
-
-
-        get("productionResult")
-        .classList
-        .remove("hidden");
-
-
-
-        get("roundPanel")
-        .classList
-        .remove("hidden");
-
-
-
-    }
-
+continue;
 
 
 }
 
-// =====================================================
-// PARTE 3/3
-// INTERFACE + EVENTOS
-// =====================================================
 
 
+/* SKU */
 
-/*
-=========================================================
-MOSTRA PRODUTOS COM ERRO
-=========================================================
-*/
+if(
+/^\d{12}$/.test(linha)
+){
 
 
-function renderReviews(reviews){
+if(atual){
 
+atual.sku=linha;
 
-    const body =
-        get("reviewBody");
+}
 
 
-    if(!body){
+continue;
 
-        return;
 
-    }
+}
 
 
-    body.innerHTML="";
 
+/* quantidade */
 
+if(
+/^\d+$/.test(linha)
+){
 
-    if(reviews.length===0){
 
+if(atual){
 
-        const empty =
-            get("reviewEmpty");
+atual.qtd=
+Number(linha);
 
+}
 
-        if(empty){
 
-            empty.classList.remove(
-                "hidden"
-            );
+}
 
-        }
 
+}
 
-        return;
 
-    }
 
+if(atual){
 
+pedidos.push(atual);
 
+}
 
 
-    const empty =
-        get("reviewEmpty");
 
-
-    if(empty){
-
-        empty.classList.add(
-            "hidden"
-        );
-
-    }
-
-
-
-
-
-    const table =
-        get("reviewTableWrapper");
-
-
-    if(table){
-
-        table.classList.remove(
-            "hidden"
-        );
-
-    }
-
-
-
-
-
-    reviews.forEach(item=>{
-
-
-        const tr =
-            document.createElement(
-                "tr"
-            );
-
-
-
-        tr.innerHTML = `
-
-        <td>
-        ${safe(item.order)}
-        </td>
-
-        <td>
-        ${safe(item.sku)}
-        </td>
-
-        <td>
-        ${safe(item.title)}
-        </td>
-
-        <td>
-        ${safe(item.qty)}
-        </td>
-
-        <td class="warning">
-        ${safe(item.reason)}
-        </td>
-
-        `;
-
-
-
-        body.appendChild(tr);
-
-
-    });
+return pedidos;
 
 
 }
@@ -1607,57 +311,89 @@ function renderReviews(reviews){
 
 
 
-
-/*
-=========================================================
-SELEÇÃO DO ARQUIVO
-=========================================================
-*/
+/* =========================
+CALCULO
+========================= */
 
 
-function selectFile(file){
+function calcular(pedidos){
 
 
-    selectedFile=file;
+let resultado={
 
+redonda:{},
 
+diamante:{}
 
-    const button =
-        get("processButton");
+};
 
 
 
-    if(button){
-
-        button.disabled =
-            !file;
-
-    }
+let total=0;
 
 
+pedidos.forEach(p=>{
 
-    const status =
-        get("fileStatus");
+
+let produto =
+produtos[p.sku];
 
 
 
-    if(status){
+if(!produto){
 
-        status.textContent =
-            file
+return;
 
-            ?
+}
 
-            "Arquivo selecionado: "
-            +
-            file.name
 
-            :
 
-            "Nenhum arquivo selecionado.";
+let qtd =
+p.qtd *
+produto.pecas;
 
-    }
 
+total+=qtd;
+
+
+
+let chave =
+produto.cor+
+" "+
+produto.medida;
+
+
+
+if(!resultado[produto.modelo]){
+
+resultado[produto.modelo]={};
+
+}
+
+
+
+if(!resultado[produto.modelo][chave]){
+
+resultado[produto.modelo][chave]=0;
+
+}
+
+
+
+resultado[produto.modelo][chave]+=qtd;
+
+
+
+});
+
+
+
+return {
+
+resultado,
+total
+
+};
 
 
 }
@@ -1667,277 +403,88 @@ function selectFile(file){
 
 
 
+/* =========================
+MOSTRAR NA TELA
+========================= */
 
 
-/*
-=========================================================
-BOTÃO PROCESSAR
-=========================================================
-*/
-
-
-function setupProcess(){
+function mostrar(dados){
 
 
 
-    const button =
-        get("processButton");
+texto(
+"ordersMetric",
+dados.pedidos
+);
 
 
 
-    if(!button){
-
-        return;
-
-    }
-
-
-
-    button.addEventListener(
-        "click",
-        async function(){
+texto(
+"piecesMetric",
+dados.total
+);
 
 
 
-            if(!selectedFile){
-
-                alert(
-                    "Selecione um arquivo primeiro."
-                );
-
-                return;
-
-            }
+texto(
+"reviewMetric",
+0
+);
 
 
 
-
-
-            try{
-
-
-                button.disabled=true;
-
-
-                button.textContent =
-                    "Processando...";
+let r =
+dados.resultado;
 
 
 
-                await processFile(
-                    selectedFile
-                );
+/* redonda */
+
+if(r.Redonda){
+
+
+Object.keys(r.Redonda)
+.forEach(k=>{
+
+
+let partes=k.split(" ");
+
+
+let cor=partes[0];
+
+let medida=
+partes[1]+" "+partes[2];
 
 
 
-                button.textContent =
-                    "Processar arquivo";
+if(cor==="Branco"){
 
 
-
-                button.disabled=false;
-
-
-
-            }
-
-            catch(error){
+if(medida==="15 cm")
+texto("roundWhite15",
+r.Redonda[k]);
 
 
-                console.error(
-                    error
-                );
+if(medida==="20 cm")
+texto("roundWhite20",
+r.Redonda[k]);
 
 
-                alert(
-                    "Erro ao processar arquivo."
-                );
+if(medida==="25 cm")
+texto("roundWhite25",
+r.Redonda[k]);
 
 
-                button.disabled=false;
+if(medida==="30 cm")
+texto("roundWhite30",
+r.Redonda[k]);
 
-
-                button.textContent =
-                    "Processar arquivo";
-
-
-            }
-
-
-
-        }
-    );
 
 
 }
 
 
-
-
-
-
-
-
-
-/*
-=========================================================
-INPUT DE ARQUIVO
-=========================================================
-*/
-
-
-function setupFileInput(){
-
-
-
-    const input =
-        get("fileInput");
-
-
-
-    if(!input){
-
-        return;
-
-    }
-
-
-
-    input.addEventListener(
-        "change",
-        function(event){
-
-
-            const file =
-                event.target.files[0];
-
-
-
-            selectFile(file);
-
-
-
-        }
-    );
-
-
-}
-
-
-
-
-
-
-
-
-
-/*
-=========================================================
-ARRASTAR ARQUIVO
-=========================================================
-*/
-
-
-function setupDropzone(){
-
-
-    const zone =
-        get("dropzone");
-
-
-
-    if(!zone){
-
-        return;
-
-    }
-
-
-
-
-    [
-        "dragenter",
-        "dragover"
-
-    ]
-    .forEach(event=>{
-
-
-        zone.addEventListener(
-            event,
-            function(e){
-
-                e.preventDefault();
-
-
-                zone.classList.add(
-                    "dragging"
-                );
-
-
-            }
-        );
-
-
-    });
-
-
-
-
-
-    [
-        "dragleave",
-        "drop"
-
-    ]
-    .forEach(event=>{
-
-
-        zone.addEventListener(
-            event,
-            function(e){
-
-                e.preventDefault();
-
-
-                zone.classList.remove(
-                    "dragging"
-                );
-
-
-            }
-        );
-
-
-    });
-
-
-
-
-
-    zone.addEventListener(
-        "drop",
-        function(event){
-
-
-            const file =
-                event.dataTransfer
-                .files[0];
-
-
-
-            if(file){
-
-
-                selectFile(file);
-
-
-            }
-
-
-
-        }
-    );
+});
 
 
 
@@ -1947,90 +494,126 @@ function setupDropzone(){
 
 
 
+/* diamante */
+
+if(r.Diamante){
+
+
+Object.keys(r.Diamante)
+.forEach(k=>{
+
+
+let partes=k.split(" ");
+
+let cor=partes[0];
+
+let medida=
+partes[1]+" "+partes[2];
+
+
+if(cor==="Branco"){
+
+
+if(medida==="20 cm")
+texto(
+"diamondWhite20",
+r.Diamante[k]
+);
+
+
+if(medida==="25 cm")
+texto(
+"diamondWhite25",
+r.Diamante[k]
+);
+
+
+if(medida==="30 cm")
+texto(
+"diamondWhite30",
+r.Diamante[k]
+);
+
+
+
+}
+
+
+
+});
+
+
+}
+
+
+
+id("emptyState")
+.classList.add("hidden");
+
+
+id("productionResult")
+.classList.remove("hidden");
+
+
+}
 
 
 
 
-/*
-=========================================================
-BOTÃO LIMPAR
-=========================================================
-*/
+
+/* =========================
+PROCESSAR
+========================= */
 
 
-function setupClear(){
+async function processar(){
 
 
-    const button =
-        get("clearButton");
+let pedidos;
 
 
-
-    if(!button){
-
-        return;
-
-    }
-
+if(
+arquivoSelecionado.name
+.toLowerCase()
+.endsWith(".pdf")
+){
 
 
-    button.addEventListener(
-        "click",
-        function(){
+pedidos =
+await lerPDF(
+arquivoSelecionado
+);
 
 
-
-            selectedFile=null;
-
+}else{
 
 
-            const input =
-                get("fileInput");
+alert(
+"Por enquanto teste usando o PDF UpSeller."
+);
 
+return;
 
-
-            if(input){
-
-                input.value="";
-
-            }
+}
 
 
 
-
-            const status =
-                get("fileStatus");
-
-
-            if(status){
-
-                status.textContent =
-                "Nenhum arquivo selecionado.";
-
-            }
+let calc =
+calcular(pedidos);
 
 
+mostrar({
 
+pedidos:
+pedidos.length,
 
-            get("productionResult")
-            .classList
-            .add(
-                "hidden"
-            );
+total:
+calc.total,
 
+resultado:
+calc.resultado
 
-
-            get("emptyState")
-            .classList
-            .remove(
-                "hidden"
-            );
-
-
-
-
-        }
-    );
+});
 
 
 
@@ -2040,220 +623,65 @@ function setupClear(){
 
 
 
+/* =========================
+EVENTOS
+========================= */
 
 
+id("fileInput")
+.addEventListener(
+"change",
+function(e){
 
+arquivoSelecionado =
+e.target.files[0];
 
 
-/*
-=========================================================
-BOTÃO IMPRIMIR
-=========================================================
-*/
+texto(
+"fileStatus",
+"Arquivo selecionado: "+
+arquivoSelecionado.name
+);
 
 
-function setupPrint(){
+id("processButton")
+.disabled=false;
 
 
-    const button =
-        get("printButton");
+});
 
 
 
-    if(!button){
+id("processButton")
+.addEventListener(
+"click",
+processar
+);
 
-        return;
 
-    }
 
+id("clearButton")
+.addEventListener(
+"click",
+function(){
 
+location.reload();
 
-    button.addEventListener(
-        "click",
-        function(){
+});
 
 
-            window.print();
 
+id("printButton")
+.addEventListener(
+"click",
+function(){
 
-        }
-    );
+window.print();
 
+});
 
 
-}
 
-
-
-
-
-
-
-
-
-/*
-=========================================================
-BOTÃO EXEMPLO
-=========================================================
-*/
-
-
-function setupDemo(){
-
-
-    const button =
-        get("demoButton");
-
-
-
-    if(!button){
-
-        return;
-
-    }
-
-
-
-    button.addEventListener(
-        "click",
-        function(){
-
-
-
-            const demo=[
-
-
-
-                {
-
-                order:
-                "DEMO001",
-
-                sku:
-                "430463424669",
-
-                title:
-                "Kit 3 Redonda",
-
-                qty:2
-
-
-                },
-
-
-
-                {
-
-                order:
-                "DEMO002",
-
-                sku:
-                "292651491140",
-
-                title:
-                "Unitária",
-
-                qty:3
-
-
-                }
-
-
-
-            ];
-
-
-
-
-            const result =
-                calculateProduction(
-                    demo
-                );
-
-
-
-
-            renderProduction(
-                result.production,
-                result.totalPieces
-            );
-
-
-
-
-            setText(
-                "ordersMetric",
-                demo.length
-            );
-
-
-
-            setText(
-                "piecesMetric",
-                result.totalPieces
-            );
-
-
-
-        }
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-/*
-=========================================================
-INICIAR SISTEMA
-=========================================================
-*/
-
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function(){
-
-
-
-        setupFileInput();
-
-
-
-        setupDropzone();
-
-
-
-        setupProcess();
-
-
-
-        setupClear();
-
-
-
-        setupPrint();
-
-
-
-        setupDemo();
-
-
-
-        console.log(
-            "Sistema de produção carregado."
-        );
-
-
-
-    }
+console.log(
+"Sistema produção carregado"
 );
