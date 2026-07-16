@@ -429,7 +429,14 @@ r.diamante["Preto_30"] || 0
 
 
 
-let totalDiamante=
+let totalDiamante =
+
+(r.diamante["Branco_20"] || 0) +
+(r.diamante["Branco_25"] || 0) +
+(r.diamante["Branco_30"] || 0) +
+(r.diamante["Preto_20"] || 0) +
+(r.diamante["Preto_25"] || 0) +
+(r.diamante["Preto_30"] || 0);
 
 Object.values(r.diamante)
 .reduce(
