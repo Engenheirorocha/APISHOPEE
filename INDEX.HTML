@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>Organizador de Produção Shopee</title>
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Biblioteca para leitura de arquivos Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">ROCHA CLAU DESIGNER</p>
+
+      <h1>Organizador de Produção</h1>
+
+      <p class="subtitle">
+        Importe os pedidos da Shopee e transforme vendas em peças reais para fabricar.
+      </p>
+    </div>
+
+    <span class="badge">
+      V1 manual • pronta para API futura
+    </span>
+  </header>
+
+  <main class="container">
+
+    <!-- IMPORTAÇÃO DA PLANILHA -->
+    <section class="card upload-card">
+      <div>
+        <h2>1. Importar pedidos</h2>
+
+        <p>
+          Use o arquivo Excel exportado da Shopee.
+          O processamento acontece apenas no seu navegador.
+        </p>
+      </div>
+
+      <label class="dropzone" id="dropzone">
+        <input
+          id="fileInput"
+          type="file"
+          accept=".xlsx,.xls,.csv"
+        />
+
+        <strong>Arraste a planilha aqui</strong>
+        <span>ou clique para selecionar</span>
+      </label>
+
+      <div class="actions">
+        <button
+          id="processBtn"
+          class="primary"
+          disabled
+        >
+          Processar planilha
+        </button>
+
+        <button
+          id="demoBtn"
+          class="secondary"
+        >
+          Carregar exemplo
+        </button>
+
+        <button
+          id="clearBtn"
+          class="ghost"
+        >
+          Limpar
+        </button>
+      </div>
+
+      <p id="fileStatus" class="status">
+        Nenhum arquivo selecionado.
+      </p>
+    </section>
+
+    <!-- RESUMO -->
+    <section class="summary-grid" aria-label="Resumo">
+      <article class="metric">
+        <span>Pedidos</span>
+        <strong id="metricOrders">0</strong>
+      </article>
+
+      <article class="metric">
+        <span>Linhas vendidas</span>
+        <strong id="metricLines">0</strong>
+      </article>
+
+      <article class="metric">
+        <span>Peças para fabricar</span>
+        <strong id="metricPieces">0</strong>
+      </article>
+
+      <article class="metric warning">
+        <span>Precisam de revisão</span>
+        <strong id="metricReview">0</strong>
+      </article>
+    </section>
+
+    <!-- ORDEM DE PRODUÇÃO -->
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>2. Ordem de produção</h2>
+
+          <p>
+            Itens iguais são agrupados por modelo, cor, medida e característica.
+          </p>
+        </div>
+
+        <button
+          id="printBtn"
+          class="secondary"
+          disabled
+        >
+          Imprimir
+        </button>
+      </div>
+
+      <div id="productionEmpty" class="empty">
+        Importe uma planilha para gerar a ordem de produção.
+      </div>
+
+      <div id="productionWrap" class="table-wrap hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Modelo</th>
+              <th>Cor</th>
+              <th>Medida</th>
+              <th>Detalhe</th>
+              <th>Quantidade</th>
+            </tr>
+          </thead>
+
+          <tbody id="productionBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PEDIDOS RECONHECIDOS -->
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>3. Pedidos reconhecidos</h2>
+
+          <p>
+            O título é apenas informativo.
+            A regra principal usa o Model ID da variação.
+          </p>
+        </div>
+      </div>
+
+      <div id="recognizedEmpty" class="empty">
+        Nenhum pedido processado.
+      </div>
+
+      <div id="recognizedWrap" class="table-wrap hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Pedido</th>
+              <th>Model ID</th>
+              <th>Variação</th>
+              <th>Qtd. comprada</th>
+              <th>Peças por venda</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+
+          <tbody id="recognizedBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PRODUTOS PARA REVISAR -->
+    <section class="card review-card">
+      <div class="section-head">
+        <div>
+          <h2>4. Produtos para revisar</h2>
+
+          <p>
+            Quando o Model ID ainda não está cadastrado,
+            o sistema não tenta adivinhar.
+          </p>
+        </div>
+      </div>
+
+      <div id="reviewEmpty" class="empty">
+        Nenhum produto pendente.
+      </div>
+
+      <div id="reviewWrap" class="table-wrap hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Pedido</th>
+              <th>Título</th>
+              <th>Variação</th>
+              <th>Model ID encontrado</th>
+              <th>Qtd.</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+
+          <tbody id="reviewBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CADASTRO DE PRODUTOS -->
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <h2>5. Cadastro de produtos</h2>
+
+          <p>
+            Este é o dicionário que converte cada Model ID
+            em peças reais de produção.
+          </p>
+        </div>
+
+        <button
+          id="exportCatalogBtn"
+          class="secondary"
+        >
+          Exportar cadastro
+        </button>
+      </div>
+
+      <form id="catalogForm" class="catalog-form">
+        <input
+          id="modelId"
+          placeholder="Model ID"
+          required
+        />
+
+        <input
+          id="model"
+          placeholder="Modelo, exemplo: Meia-lua"
+          required
+        />
+
+        <select id="color" required>
+          <option value="">Cor</option>
+          <option value="Branco">Branco</option>
+          <option value="Preto">Preto</option>
+          <option value="Outra">Outra</option>
+        </select>
+
+        <input
+          id="size"
+          placeholder="Medida, exemplo: 30 cm"
+          required
+        />
+
+        <input
+          id="detail"
+          placeholder="Detalhe opcional: LED, diamante..."
+        />
+
+        <input
+          id="piecesPerSale"
+          type="number"
+          min="1"
+          step="1"
+          placeholder="Peças por venda"
+          required
+        />
+
+        <button class="primary" type="submit">
+          Salvar produto
+        </button>
+      </form>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Model ID</th>
+              <th>Modelo</th>
+              <th>Cor</th>
+              <th>Medida</th>
+              <th>Detalhe</th>
+              <th>Peças por venda</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+
+          <tbody id="catalogBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ESTRUTURA FUTURA -->
+    <section class="card roadmap">
+      <h2>Arquitetura preparada para a API da Shopee</h2>
+
+      <p>
+        Hoje a entrada é uma planilha. No futuro, a API alimentará
+        o mesmo formato interno de pedidos. As regras de produção
+        e o cadastro dos Model IDs continuarão iguais.
+      </p>
+
+      <div class="flow">
+        <span>Excel manual</span>
+        <b>→</b>
+        <span>Normalizador</span>
+        <b>→</b>
+        <span>Motor de produção</span>
+        <b>→</b>
+        <span>Relatório</span>
+      </div>
+
+      <div class="flow future">
+        <span>API Shopee</span>
+        <b>→</b>
+        <span>Normalizador</span>
+        <b>→</b>
+        <span>Motor de produção</span>
+        <b>→</b>
+        <span>Estoque e chapas</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODELO DAS LINHAS DE REVISÃO -->
+  <template id="reviewRowTemplate">
+    <tr>
+      <td data-key="order"></td>
+      <td data-key="title"></td>
+      <td data-key="variation"></td>
+      <td data-key="modelId"></td>
+      <td data-key="qty"></td>
+
+      <td>
+        <button
+          class="small primary"
+          data-action="configure"
+        >
+          Cadastrar
+        </button>
+      </td>
+    </tr>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
