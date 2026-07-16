@@ -1,1050 +1,545 @@
 "use strict";
 
-/* =====================================================
-   CONFIGURAÇÃO
-===================================================== */
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const SKU = {
+
+"228792214684":{
+modelo:"Redonda",
+cor:"Branco",
+medida:25,
+pecas:1
+},
+
+"228792214678":{
+modelo:"Redonda",
+cor:"Branco",
+medida:30,
+pecas:1
+},
+
+"292651491140":{
+modelo:"Redonda",
+cor:"Branco",
+medida:30,
+pecas:1
+},
+
+"209613874440":{
+modelo:"Redonda",
+cor:"Branco",
+medida:30,
+pecas:2
+},
+
+"445867399988":{
+modelo:"Redonda",
+cor:"Branco",
+medida:15,
+pecas:2
+},
+
+"430463424668":{
+modelo:"Redonda",
+cor:"Branco",
+medida:25,
+pecas:3
+},
+
+"430463424669":{
+modelo:"Redonda",
+cor:"Branco",
+medida:30,
+pecas:3
+},
+
+"360463511208":{
+modelo:"Diamante",
+cor:"Branco",
+medida:20,
+pecas:3
+},
+
+"360463511209":{
+modelo:"Diamante",
+cor:"Branco",
+medida:25,
+pecas:3
+},
+
+"360463511210":{
+modelo:"Diamante",
+cor:"Branco",
+medida:30,
+pecas:3
+},
+
+"360463511211":{
+modelo:"Diamante",
+cor:"Preto",
+medida:20,
+pecas:3
+},
+
+"360463511212":{
+modelo:"Diamante",
+cor:"Preto",
+medida:25,
+pecas:3
+},
+
+"360463511213":{
+modelo:"Diamante",
+cor:"Preto",
+medida:30,
+pecas:3
 }
 
-/* =====================================================
-   CATÁLOGO DE SKUS
-===================================================== */
-
-const CATALOGO = {
-  /* Unitárias redondas */
-
-  "228792214684": {
-    modelo: "Redonda",
-    cor: "Branco",
-    medida: 25,
-    pecasPorVenda: 1
-  },
-
-  "228792214678": {
-    modelo: "Redonda",
-    cor: "Branco",
-    medida: 30,
-    pecasPorVenda: 1
-  },
-
-  "292651491139": {
-    modelo: "Redonda",
-    cor: "Preto",
-    medida: 30,
-    pecasPorVenda: 1
-  },
-
-  "292651491140": {
-    modelo: "Redonda",
-    cor: "Branco",
-    medida: 30,
-    pecasPorVenda: 1
-  },
-
-  /* Kits com 2 redondas */
-
-  "209613874440": {
-    modelo: "Redonda",
-    cor: "Branco",
-    medida: 30,
-    pecasPorVenda: 2
-  },
-
-  "445867399988": {
-    modelo: "Redonda",
-    cor: "Branco",
-    medida: 15,
-    pecasPorVenda: 2
-  },
-
-  /* Kits com 3 redondas */
-
-  "430463424666": {
-    modelo: "Redonda",
-    cor: "Branco",
-    medida: 20,
-    pecasPorVenda: 3
-  },
-
-  "430463424667": {
-    modelo: "Redonda",
-    cor: "Preto",
-    medida: 20,
-    pecasPorVenda: 3
-  },
-
-  "430463424668": {
-    modelo: "Redonda",
-    cor: "Branco",
-    medida: 25,
-    pecasPorVenda: 3
-  },
-
-  "430463424669": {
-    modelo: "Redonda",
-    cor: "Branco",
-    medida: 30,
-    pecasPorVenda: 3
-  },
-
-  "430463424670": {
-    modelo: "Redonda",
-    cor: "Preto",
-    medida: 30,
-    pecasPorVenda: 3
-  },
-
-  "430463424671": {
-    modelo: "Redonda",
-    cor: "Preto",
-    medida: 25,
-    pecasPorVenda: 3
-  },
-
-  "216387569151": {
-    modelo: "Redonda",
-    cor: "Branco",
-    medida: 16,
-    pecasPorVenda: 3
-  },
-
-  /* Kits com 3 diamante */
-
-  "360463511208": {
-    modelo: "Diamante",
-    cor: "Branco",
-    medida: 20,
-    pecasPorVenda: 3
-  },
-
-  "360463511209": {
-    modelo: "Diamante",
-    cor: "Branco",
-    medida: 25,
-    pecasPorVenda: 3
-  },
-
-  "360463511210": {
-    modelo: "Diamante",
-    cor: "Branco",
-    medida: 30,
-    pecasPorVenda: 3
-  },
-
-  "360463511211": {
-    modelo: "Diamante",
-    cor: "Preto",
-    medida: 20,
-    pecasPorVenda: 3
-  },
-
-  "360463511212": {
-    modelo: "Diamante",
-    cor: "Preto",
-    medida: 25,
-    pecasPorVenda: 3
-  },
-
-  "360463511213": {
-    modelo: "Diamante",
-    cor: "Preto",
-    medida: 30,
-    pecasPorVenda: 3
-  }
 };
 
-/* =====================================================
-   ESTADO
-===================================================== */
 
-let arquivoSelecionado = null;
+let arquivo = null;
 
-/* =====================================================
-   FUNÇÕES AUXILIARES
-===================================================== */
 
-function elemento(id) {
-  return document.getElementById(id);
+
+function id(nome){
+
+return document.getElementById(nome);
+
 }
 
-function definirTexto(id, valor) {
-  const alvo = elemento(id);
 
-  if (alvo) {
-    alvo.textContent = valor;
-  }
+
+function texto(nome,valor){
+
+let el=id(nome);
+
+if(el){
+
+el.textContent=valor;
+
 }
 
-function limparTexto(valor) {
-  return String(valor ?? "")
-    .replace(/\s+/g, " ")
-    .trim();
 }
 
-function normalizar(valor) {
-  return String(valor ?? "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/branc0/g, "branco")
-    .replace(/\s+/g, " ")
-    .trim();
+
+
+/*
+==========================
+LER PDF
+==========================
+*/
+
+
+async function lerPDF(file){
+
+
+let buffer =
+await file.arrayBuffer();
+
+
+let pdf =
+await pdfjsLib
+.getDocument({
+data:buffer
+})
+.promise;
+
+
+
+let textoPDF="";
+
+
+for(
+let i=1;
+i<=pdf.numPages;
+i++
+){
+
+let pagina =
+await pdf.getPage(i);
+
+
+let conteudo =
+await pagina.getTextContent();
+
+
+conteudo.items.forEach(item=>{
+
+textoPDF += " " + item.str;
+
+});
+
+
 }
 
-function somenteNumeros(valor) {
-  return String(valor ?? "").replace(/\D/g, "");
+
+
+let skus =
+textoPDF.match(/\d{12}/g);
+
+
+
+if(!skus){
+
+throw new Error(
+"Nenhum SKU encontrado"
+);
+
 }
 
-function protegerHtml(valor) {
-  return String(valor ?? "").replace(/[&<>"']/g, caractere => {
-    const mapa = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    };
 
-    return mapa[caractere];
-  });
+
+return skus.map(sku=>({
+
+sku:sku,
+qtd:1
+
+}));
+
 }
 
-function mostrarElemento(id, mostrar) {
-  const alvo = elemento(id);
 
-  if (alvo) {
-    alvo.classList.toggle("hidden", !mostrar);
-  }
+
+/*
+==========================
+CALCULAR
+==========================
+*/
+
+
+function calcular(lista){
+
+
+let resultado={
+
+redonda:{},
+
+diamante:{}
+
+};
+
+
+let total=0;
+
+
+
+lista.forEach(item=>{
+
+
+let produto =
+SKU[item.sku];
+
+
+if(!produto){
+
+return;
+
 }
 
-/* =====================================================
-   LEITURA DO PDF UPSELLER
-===================================================== */
 
-async function extrairItensPdf(arquivo) {
-  if (!window.pdfjsLib) {
-    throw new Error("A biblioteca PDF não foi carregada.");
-  }
 
-  const buffer = await arquivo.arrayBuffer();
+let quantidade =
+produto.pecas *
+item.qtd;
 
-  const pdf = await pdfjsLib
-    .getDocument({
-      data: buffer
-    })
-    .promise;
 
-  const itens = [];
+total += quantidade;
 
-  for (
-    let numeroPagina = 1;
-    numeroPagina <= pdf.numPages;
-    numeroPagina++
-  ) {
-    const pagina = await pdf.getPage(numeroPagina);
-    const conteudo = await pagina.getTextContent();
 
-    conteudo.items.forEach(item => {
-      const texto = limparTexto(item.str);
 
-      if (texto) {
-        itens.push(texto);
-      }
-    });
-  }
+let chave =
+produto.cor+"_"+produto.medida;
 
-  return itens;
+
+
+if(produto.modelo==="Redonda"){
+
+
+if(!resultado.redonda[chave]){
+
+resultado.redonda[chave]=0;
+
 }
 
-function interpretarPdfUpSeller(itens) {
-  const pedidos = [];
 
-  const regexPedido = /\b\d{6}[A-Z0-9]{6,}\b/i;
-  const regexSku = /\b\d{12}\b/;
-  const regexCodigoInterno = /\bUP[A-Z0-9]+\b/i;
+resultado.redonda[chave]+=quantidade;
 
-  let pedidoAtual = null;
 
-  function salvarPedidoAtual() {
-    if (
-      pedidoAtual &&
-      pedidoAtual.pedido &&
-      pedidoAtual.sku
-    ) {
-      pedidos.push({
-        pedido: pedidoAtual.pedido,
-        sku: pedidoAtual.sku,
-        quantidade:
-          pedidoAtual.quantidade > 0
-            ? pedidoAtual.quantidade
-            : 1,
-        titulo: pedidoAtual.titulo.join(" ")
-      });
-    }
-
-    pedidoAtual = null;
-  }
-
-  for (const itemOriginal of itens) {
-    let item = limparTexto(itemOriginal);
-
-    if (!item) {
-      continue;
-    }
-
-    const pedidoEncontrado = item.match(regexPedido);
-
-    if (pedidoEncontrado) {
-      salvarPedidoAtual();
-
-      pedidoAtual = {
-        pedido: pedidoEncontrado[0],
-        sku: "",
-        quantidade: 0,
-        titulo: [],
-        esperandoQuantidade: false
-      };
-
-      item = item
-        .replace(pedidoEncontrado[0], "")
-        .replace(regexCodigoInterno, "")
-        .replace(/^\d+\s*/, "")
-        .trim();
-
-      if (item) {
-        pedidoAtual.titulo.push(item);
-      }
-
-      continue;
-    }
-
-    if (!pedidoAtual) {
-      continue;
-    }
-
-    if (regexCodigoInterno.test(item)) {
-      item = item
-        .replace(regexCodigoInterno, "")
-        .trim();
-
-      if (!item) {
-        continue;
-      }
-    }
-
-    const skuEncontrado = item.match(regexSku);
-
-    if (skuEncontrado) {
-      pedidoAtual.sku = skuEncontrado[0];
-      pedidoAtual.esperandoQuantidade = true;
-
-      const depoisSku = item
-        .replace(skuEncontrado[0], "")
-        .trim();
-
-      const quantidadeNaMesmaLinha =
-        depoisSku.match(/\b([1-9]\d*)\b/);
-
-      if (quantidadeNaMesmaLinha) {
-        pedidoAtual.quantidade =
-          Number(quantidadeNaMesmaLinha[1]);
-
-        pedidoAtual.esperandoQuantidade = false;
-      }
-
-      const antesSku = item
-        .split(skuEncontrado[0])[0]
-        .trim();
-
-      if (antesSku) {
-        pedidoAtual.titulo.push(antesSku);
-      }
-
-      continue;
-    }
-
-    if (
-      pedidoAtual.esperandoQuantidade &&
-      /^\d+$/.test(item)
-    ) {
-      const quantidade = Number(item);
-
-      if (
-        Number.isInteger(quantidade) &&
-        quantidade >= 1 &&
-        quantidade <= 100
-      ) {
-        pedidoAtual.quantidade = quantidade;
-        pedidoAtual.esperandoQuantidade = false;
-
-        continue;
-      }
-    }
-
-    const textoNormalizado = normalizar(item);
-
-    const ignorar =
-      textoNormalizado.includes("lista de separacao") ||
-      textoNormalizado.includes("qtd. de pedidos") ||
-      textoNormalizado.includes("qtd. de sku") ||
-      textoNormalizado.includes("total(itens)") ||
-      textoNormalizado.includes("titulo & variacao") ||
-      textoNormalizado.includes("imprimir - upseller") ||
-      textoNormalizado.includes("app.upseller.com") ||
-      textoNormalizado === "sku" ||
-      textoNormalizado === "qtd." ||
-      textoNormalizado === "#";
-
-    if (!ignorar && !pedidoAtual.sku) {
-      pedidoAtual.titulo.push(item);
-    }
-  }
-
-  salvarPedidoAtual();
-
-  return pedidos;
 }
 
-async function lerPdfUpSeller(arquivo) {
-  const itens = await extrairItensPdf(arquivo);
-  const pedidos = interpretarPdfUpSeller(itens);
 
-  if (!pedidos.length) {
-    throw new Error(
-      "Nenhum pedido foi encontrado no PDF."
-    );
-  }
 
-  return pedidos;
+if(produto.modelo==="Diamante"){
+
+
+if(!resultado.diamante[chave]){
+
+resultado.diamante[chave]=0;
+
 }
 
-/* =====================================================
-   LEITURA EXCEL / CSV
-===================================================== */
 
-function encontrarColuna(linha, nomes) {
-  const colunas = Object.entries(linha);
+resultado.diamante[chave]+=quantidade;
 
-  for (const nomeProcurado of nomes) {
-    const nomeNormalizado = normalizar(nomeProcurado);
 
-    const encontrada = colunas.find(([nomeColuna, valor]) => {
-      return (
-        normalizar(nomeColuna) === nomeNormalizado &&
-        valor !== "" &&
-        valor !== null &&
-        valor !== undefined
-      );
-    });
-
-    if (encontrada) {
-      return encontrada[1];
-    }
-  }
-
-  return "";
 }
 
-async function lerPlanilha(arquivo) {
-  if (!window.XLSX) {
-    throw new Error(
-      "A biblioteca de Excel não foi carregada."
-    );
-  }
 
-  const buffer = await arquivo.arrayBuffer();
 
-  const pasta = XLSX.read(buffer, {
-    type: "array"
-  });
+});
 
-  const nomeAba =
-    pasta.SheetNames.find(nome => {
-      return normalizar(nome) === "orders";
-    }) || pasta.SheetNames[0];
 
-  const planilha = pasta.Sheets[nomeAba];
 
-  const linhas = XLSX.utils.sheet_to_json(planilha, {
-    defval: "",
-    raw: false
-  });
+return {
+resultado,
+total
+};
 
-  return linhas
-    .map(linha => {
-      return {
-        pedido: limparTexto(
-          encontrarColuna(linha, [
-            "ID do pedido",
-            "Nº de Pedido",
-            "Número do pedido",
-            "Pedido"
-          ])
-        ),
 
-        sku: somenteNumeros(
-          encontrarColuna(linha, [
-            "SKU",
-            "Número de referência SKU",
-            "Nº de referência SKU",
-            "Model ID"
-          ])
-        ),
-
-        quantidade:
-          Number(
-            encontrarColuna(linha, [
-              "Quantidade",
-              "Qtd.",
-              "Qtd"
-            ])
-          ) || 1,
-
-        titulo: limparTexto(
-          encontrarColuna(linha, [
-            "Nome do Produto",
-            "Título do produto"
-          ])
-        )
-      };
-    })
-    .filter(linha => {
-      return linha.pedido || linha.sku || linha.titulo;
-    });
 }
 
-/* =====================================================
-   ESTRUTURA DA PRODUÇÃO
-===================================================== */
 
-function criarProducaoVazia() {
-  return {
-    redonda: {
-      Branco: {
-        15: 0,
-        16: 0,
-        20: 0,
-        25: 0,
-        30: 0
-      },
 
-      Preto: {
-        15: 0,
-        16: 0,
-        20: 0,
-        25: 0,
-        30: 0
-      }
-    },
+/*
+==========================
+MOSTRAR
+==========================
+*/
 
-    diamante: {
-      Branco: {
-        20: 0,
-        25: 0,
-        30: 0
-      },
 
-      Preto: {
-        20: 0,
-        25: 0,
-        30: 0
-      }
-    },
+function mostrar(dados){
 
-    gancho: {
-      Branco: 0,
-      Preto: 0
-    }
-  };
+
+let r =
+dados.resultado;
+
+
+
+texto(
+"ordersMetric",
+12
+);
+
+
+texto(
+"piecesMetric",
+dados.total
+);
+
+
+
+texto(
+"reviewMetric",
+0
+);
+
+
+
+
+
+// REDONDA BRANCO
+
+
+texto(
+"roundWhite15",
+r.redonda["Branco_15"] || 0
+);
+
+
+texto(
+"roundWhite25",
+r.redonda["Branco_25"] || 0
+);
+
+
+texto(
+"roundWhite30",
+r.redonda["Branco_30"] || 0
+);
+
+
+
+
+
+let totalRedonda =
+
+(r.redonda["Branco_15"]||0)+
+(r.redonda["Branco_25"]||0)+
+(r.redonda["Branco_30"]||0);
+
+
+
+texto(
+"roundWhiteTotal",
+totalRedonda
+);
+
+
+
+texto(
+"roundTotal",
+totalRedonda+" peças"
+);
+
+
+
+
+
+// DIAMANTE
+
+
+texto(
+"diamondWhite20",
+r.diamante["Branco_20"] || 0
+);
+
+
+texto(
+"diamondWhite25",
+r.diamante["Branco_25"] || 0
+);
+
+
+texto(
+"diamondWhite30",
+r.diamante["Branco_30"] || 0
+);
+
+
+texto(
+"diamondBlack20",
+r.diamante["Preto_20"] || 0
+);
+
+
+texto(
+"diamondBlack25",
+r.diamante["Preto_25"] || 0
+);
+
+
+texto(
+"diamondBlack30",
+r.diamante["Preto_30"] || 0
+);
+
+
+
+let totalDiamante=
+
+Object.values(r.diamante)
+.reduce(
+(a,b)=>a+b,
+0
+);
+
+
+
+texto(
+"diamondTotal",
+totalDiamante+" peças"
+);
+
+
+
+id("emptyState")
+.classList.add("hidden");
+
+
+id("productionResult")
+.classList.remove("hidden");
+
+
 }
 
-/* =====================================================
-   CÁLCULO
-===================================================== */
 
-function calcularProducao(pedidos) {
-  const producao = criarProducaoVazia();
-  const revisoes = [];
-  const pedidosUnicos = new Set();
 
-  let totalPecas = 0;
+/*
+==========================
+PROCESSAR
+==========================
+*/
 
-  pedidos.forEach(pedido => {
-    if (pedido.pedido) {
-      pedidosUnicos.add(pedido.pedido);
-    }
 
-    const produto = CATALOGO[pedido.sku];
+async function processar(){
 
-    if (!produto) {
-      revisoes.push({
-        ...pedido,
-        motivo: pedido.sku
-          ? "SKU não cadastrado"
-          : "SKU não encontrado"
-      });
 
-      return;
-    }
+let pedidos =
+await lerPDF(arquivo);
 
-    const quantidadeVendida =
-      Math.max(
-        1,
-        Number(pedido.quantidade) || 1
-      );
 
-    const quantidadeFisica =
-      quantidadeVendida *
-      produto.pecasPorVenda;
 
-    totalPecas += quantidadeFisica;
+let calculo =
+calcular(pedidos);
 
-    if (produto.modelo === "Redonda") {
-      if (
-        producao.redonda[produto.cor] &&
-        Object.prototype.hasOwnProperty.call(
-          producao.redonda[produto.cor],
-          produto.medida
-        )
-      ) {
-        producao.redonda[produto.cor][produto.medida] +=
-          quantidadeFisica;
-      }
 
-      return;
-    }
 
-    if (produto.modelo === "Diamante") {
-      if (
-        producao.diamante[produto.cor] &&
-        Object.prototype.hasOwnProperty.call(
-          producao.diamante[produto.cor],
-          produto.medida
-        )
-      ) {
-        producao.diamante[produto.cor][produto.medida] +=
-          quantidadeFisica;
-      }
+mostrar(calculo);
 
-      return;
-    }
 
-    if (produto.modelo === "Gancho") {
-      producao.gancho[produto.cor] += quantidadeFisica;
-    }
-  });
 
-  return {
-    producao,
-    revisoes,
-    totalPecas,
-    totalPedidos:
-      pedidosUnicos.size || pedidos.length
-  };
 }
 
-/* =====================================================
-   EXIBIÇÃO
-===================================================== */
-
-function somarObjeto(objeto) {
-  return Object.values(objeto).reduce(
-    (total, valor) => total + valor,
-    0
-  );
-}
-
-function renderizarProducao(resultado) {
-  const { producao } = resultado;
-
-  const totalRedondaBranca =
-    somarObjeto(producao.redonda.Branco);
-
-  const totalRedondaPreta =
-    somarObjeto(producao.redonda.Preto);
-
-  const totalRedonda =
-    totalRedondaBranca +
-    totalRedondaPreta;
-
-  const totalDiamanteBranca =
-    somarObjeto(producao.diamante.Branco);
-
-  const totalDiamantePreta =
-    somarObjeto(producao.diamante.Preto);
-
-  const totalDiamante =
-    totalDiamanteBranca +
-    totalDiamantePreta;
-
-  const totalGancho =
-    producao.gancho.Branco +
-    producao.gancho.Preto;
-
-  [15, 16, 20, 25, 30].forEach(medida => {
-    definirTexto(
-      `roundWhite${medida}`,
-      producao.redonda.Branco[medida] || 0
-    );
-
-    definirTexto(
-      `roundBlack${medida}`,
-      producao.redonda.Preto[medida] || 0
-    );
-  });
-
-  definirTexto(
-    "roundWhiteTotal",
-    totalRedondaBranca
-  );
-
-  definirTexto(
-    "roundBlackTotal",
-    totalRedondaPreta
-  );
-
-  definirTexto(
-    "roundTotal",
-    `${totalRedonda} peças`
-  );
-
-  [20, 25, 30].forEach(medida => {
-    definirTexto(
-      `diamondWhite${medida}`,
-      producao.diamante.Branco[medida] || 0
-    );
-
-    definirTexto(
-      `diamondBlack${medida}`,
-      producao.diamante.Preto[medida] || 0
-    );
-  });
-
-  definirTexto(
-    "diamondWhiteTotal",
-    totalDiamanteBranca
-  );
-
-  definirTexto(
-    "diamondBlackTotal",
-    totalDiamantePreta
-  );
-
-  definirTexto(
-    "diamondTotal",
-    `${totalDiamante} peças`
-  );
-
-  definirTexto(
-    "hookWhite",
-    producao.gancho.Branco
-  );
-
-  definirTexto(
-    "hookBlack",
-    producao.gancho.Preto
-  );
-
-  definirTexto(
-    "hookTotal",
-    `${totalGancho} unidades`
-  );
-
-  definirTexto(
-    "ordersMetric",
-    resultado.totalPedidos
-  );
-
-  definirTexto(
-    "piecesMetric",
-    resultado.totalPecas
-  );
-
-  definirTexto(
-    "reviewMetric",
-    resultado.revisoes.length
-  );
-
-  mostrarElemento(
-    "emptyState",
-    resultado.totalPecas === 0
-  );
-
-  mostrarElemento(
-    "productionResult",
-    resultado.totalPecas > 0
-  );
-
-  const botaoImprimir = elemento("printButton");
-
-  if (botaoImprimir) {
-    botaoImprimir.disabled =
-      resultado.totalPecas === 0;
-  }
-
-  renderizarRevisoes(resultado.revisoes);
-}
-
-function renderizarRevisoes(revisoes) {
-  const corpo = elemento("reviewBody");
-
-  if (!corpo) {
-    return;
-  }
-
-  corpo.innerHTML = "";
-
-  revisoes.forEach(item => {
-    corpo.insertAdjacentHTML(
-      "beforeend",
-      `
-        <tr>
-          <td>${protegerHtml(item.pedido || "—")}</td>
-          <td>${protegerHtml(item.sku || "Não encontrado")}</td>
-          <td>${protegerHtml(item.titulo || "—")}</td>
-          <td>${protegerHtml(item.motivo)}</td>
-        </tr>
-      `
-    );
-  });
-}
-
-/* =====================================================
-   PROCESSAMENTO DO ARQUIVO
-===================================================== */
-
-async function processarArquivo() {
-  if (!arquivoSelecionado) {
-    alert("Selecione um arquivo.");
-    return;
-  }
-
-  const botao = elemento("processButton");
-
-  try {
-    botao.disabled = true;
-    botao.textContent = "Processando...";
-
-    definirTexto(
-      "fileStatus",
-      "Processando arquivo..."
-    );
-
-    const nomeArquivo =
-      arquivoSelecionado.name.toLowerCase();
-
-    let pedidos;
-
-    if (nomeArquivo.endsWith(".pdf")) {
-      pedidos = await lerPdfUpSeller(
-        arquivoSelecionado
-      );
-    } else {
-      pedidos = await lerPlanilha(
-        arquivoSelecionado
-      );
-    }
-
-    const resultado =
-      calcularProducao(pedidos);
-
-    renderizarProducao(resultado);
-
-    definirTexto(
-      "fileStatus",
-      `${pedidos.length} pedido(s) processado(s).`
-    );
-  } catch (erro) {
-    console.error(erro);
-
-    definirTexto(
-      "fileStatus",
-      "Erro ao processar o arquivo."
-    );
-
-    alert(
-      erro.message ||
-      "Não foi possível processar o arquivo."
-    );
-  } finally {
-    botao.disabled = false;
-    botao.textContent = "Processar arquivo";
-  }
-}
-
-/* =====================================================
-   LIMPAR
-===================================================== */
-
-function limparSistema() {
-  arquivoSelecionado = null;
-
-  const input = elemento("fileInput");
-
-  if (input) {
-    input.value = "";
-  }
-
-  definirTexto(
-    "fileStatus",
-    "Nenhum arquivo selecionado."
-  );
-
-  renderizarProducao({
-    producao: criarProducaoVazia(),
-    revisoes: [],
-    totalPecas: 0,
-    totalPedidos: 0
-  });
-
-  const botaoProcessar =
-    elemento("processButton");
-
-  if (botaoProcessar) {
-    botaoProcessar.disabled = true;
-  }
-}
-
-/* =====================================================
-   EXEMPLO
-===================================================== */
-
-function testarExemplo() {
-  const pedidos = [
-    {
-      pedido: "DEMO001",
-      sku: "430463424669",
-      quantidade: 2,
-      titulo: "Kit 3 branco 30 cm"
-    },
-
-    {
-      pedido: "DEMO002",
-      sku: "292651491140",
-      quantidade: 2,
-      titulo: "Unitária branca 30 cm"
-    },
-
-    {
-      pedido: "DEMO003",
-      sku: "360463511212",
-      quantidade: 1,
-      titulo: "Diamante preto 25 cm"
-    }
-  ];
-
-  renderizarProducao(
-    calcularProducao(pedidos)
-  );
-}
-
-/* =====================================================
-   EVENTOS
-===================================================== */
-
-const inputArquivo = elemento("fileInput");
-const botaoProcessar = elemento("processButton");
-const botaoLimpar = elemento("clearButton");
-const botaoExemplo = elemento("demoButton");
-const botaoImprimir = elemento("printButton");
-const zonaArquivo = elemento("dropzone");
-
-if (inputArquivo) {
-  inputArquivo.addEventListener(
-    "change",
-    evento => {
-      arquivoSelecionado =
-        evento.target.files?.[0] || null;
-
-      definirTexto(
-        "fileStatus",
-        arquivoSelecionado
-          ? `Arquivo selecionado: ${arquivoSelecionado.name}`
-          : "Nenhum arquivo selecionado."
-      );
-
-      if (botaoProcessar) {
-        botaoProcessar.disabled =
-          !arquivoSelecionado;
-      }
-    }
-  );
-}
-
-if (botaoProcessar) {
-  botaoProcessar.addEventListener(
-    "click",
-    processarArquivo
-  );
-}
-
-if (botaoLimpar) {
-  botaoLimpar.addEventListener(
-    "click",
-    limparSistema
-  );
-}
-
-if (botaoExemplo) {
-  botaoExemplo.addEventListener(
-    "click",
-    testarExemplo
-  );
-}
-
-if (botaoImprimir) {
-  botaoImprimir.addEventListener(
-    "click",
-    () => window.print()
-  );
-}
-
-if (zonaArquivo) {
-  ["dragenter", "dragover"].forEach(evento => {
-    zonaArquivo.addEventListener(
-      evento,
-      e => {
-        e.preventDefault();
-        zonaArquivo.classList.add("dragging");
-      }
-    );
-  });
-
-  ["dragleave", "drop"].forEach(evento => {
-    zonaArquivo.addEventListener(
-      evento,
-      e => {
-        e.preventDefault();
-        zonaArquivo.classList.remove("dragging");
-      }
-    );
-  });
-
-  zonaArquivo.addEventListener(
-    "drop",
-    evento => {
-      const arquivo =
-        evento.dataTransfer?.files?.[0];
-
-      if (!arquivo) {
-        return;
-      }
-
-      arquivoSelecionado = arquivo;
-
-      definirTexto(
-        "fileStatus",
-        `Arquivo selecionado: ${arquivo.name}`
-      );
-
-      if (botaoProcessar) {
-        botaoProcessar.disabled = false;
-      }
-    }
-  );
-}
-
-limparSistema();
+
+
+
+
+/*
+==========================
+EVENTOS
+==========================
+*/
+
+
+id("fileInput")
+.addEventListener(
+"change",
+function(e){
+
+
+arquivo =
+e.target.files[0];
+
+
+texto(
+"fileStatus",
+arquivo.name
+);
+
+
+id("processButton").disabled=false;
+
+
+});
+
+
+
+id("processButton")
+.addEventListener(
+"click",
+processar
+);
+
+
+
+id("clearButton")
+.addEventListener(
+"click",
+()=>{
+
+location.reload();
+
+});
+
+
+id("printButton")
+.addEventListener(
+"click",
+()=>{
+
+window.print();
+
+});
