@@ -1,264 +1,367 @@
 "use strict";
 
-/*
-=========================================================
-ORGANIZADOR DE PRODUÇÃO — VERSÃO MANUAL
-=========================================================
+const STORAGE_KEY = "catalogo-producao-shopee-v3";
 
-Funcionamento:
-
-1. O usuário envia uma planilha Excel/CSV.
-2. O sistema encontra o Model ID/SKU da variação.
-3. Consulta o cadastro interno.
-4. Converte kits em quantidade real de peças.
-5. Agrupa a produção em:
-
-- Prateleira redonda branca/preta
-- Prateleira diamante branca/preta
-- Ganchos penduradores branco/preto
-
-A estrutura já está preparada para futuramente receber
-pedidos diretamente pela API da Shopee.
-=========================================================
-*/
-
-const STORAGE_KEY = "catalogoProducaoShopeeV2";
-
-/*
-=========================================================
-CADASTRO INICIAL DOS PRODUTOS
-=========================================================
-
-O Model ID/SKU identifica a variação real comprada.
-
-A informação "pieces" representa quantas peças físicas
-uma venda daquele Model ID gera.
-
-Exemplo:
-
-Model ID: 430463424669
-Quantidade comprada: 2
-Peças por venda: 3
-
-Resultado:
-2 × 3 = 6 prateleiras.
-*/
-
-const defaultCatalog = [
-  /*
-  =====================================
-  PRATELEIRAS UNITÁRIAS MEIA-LUA
-  =====================================
-  */
-
+const DEFAULT_CATALOG = [
   {
     modelId: "292651491139",
     model: "Redonda",
     color: "Preto",
     size: "30 cm",
-    detail: "Unitária",
-    pieces: 1
+    pieces: 1,
+    detail: "Unitária"
   },
-
   {
     modelId: "292651491140",
     model: "Redonda",
     color: "Branco",
     size: "30 cm",
-    detail: "Unitária",
-    pieces: 1
+    pieces: 1,
+    detail: "Unitária"
   },
-
-  /*
-  =====================================
-  KIT 3 — PRATELEIRA MEIA-LUA
-  =====================================
-  */
 
   {
     modelId: "430463424666",
     model: "Redonda",
     color: "Branco",
     size: "20 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "430463424667",
     model: "Redonda",
     color: "Preto",
     size: "20 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "430463424668",
     model: "Redonda",
     color: "Branco",
     size: "25 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "430463424669",
     model: "Redonda",
     color: "Branco",
     size: "30 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "430463424670",
     model: "Redonda",
     color: "Preto",
     size: "30 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "430463424671",
     model: "Redonda",
     color: "Preto",
     size: "25 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "216387569151",
     model: "Redonda",
     color: "Branco",
     size: "16 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
-  /*
-  =====================================
-  KIT 3 — PRATELEIRA DIAMANTE
-  =====================================
-  */
 
   {
     modelId: "360463511208",
     model: "Diamante",
     color: "Branco",
     size: "20 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "360463511209",
     model: "Diamante",
     color: "Branco",
     size: "25 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "360463511210",
     model: "Diamante",
     color: "Branco",
     size: "30 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "360463511211",
     model: "Diamante",
     color: "Preto",
     size: "20 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "360463511212",
     model: "Diamante",
     color: "Preto",
     size: "25 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
   {
     modelId: "360463511213",
     model: "Diamante",
     color: "Preto",
     size: "30 cm",
-    detail: "Kit 3",
-    pieces: 3
+    pieces: 3,
+    detail: "Kit 3"
   },
-
-  /*
-  =====================================
-  COMBO COM LED
-  =====================================
-  */
 
   {
     modelId: "396026195582",
     model: "Redonda",
     color: "Branco",
     size: "30 cm",
-    detail: "Combo 2 com LED",
-    pieces: 2
+    pieces: 2,
+    detail: "Combo 2 com LED"
   }
-
-  /*
-  =====================================
-  GANCHOS
-  =====================================
-
-  Os Model IDs dos ganchos poderão ser cadastrados
-  pelo formulário do sistema.
-
-  Exemplo:
-
-  {
-    modelId: "123456789",
-    model: "Gancho",
-    color: "Branco",
-    size: "",
-    detail: "Pendurador",
-    pieces: 3
-  }
-  */
 ];
 
-/*
-=========================================================
-ESTADO DO SISTEMA
-=========================================================
-*/
+const TITLE_RULES = [
+  {
+    titleIncludes: [
+      "kit 3 prateleiras de canto meia lua"
+    ],
+    variations: {
+      "branco 20 cm": {
+        model: "Redonda",
+        color: "Branco",
+        size: "20 cm",
+        pieces: 3
+      },
+      "preto 20 cm": {
+        model: "Redonda",
+        color: "Preto",
+        size: "20 cm",
+        pieces: 3
+      },
+      "branco 25 cm": {
+        model: "Redonda",
+        color: "Branco",
+        size: "25 cm",
+        pieces: 3
+      },
+      "preto 25 cm": {
+        model: "Redonda",
+        color: "Preto",
+        size: "25 cm",
+        pieces: 3
+      },
+      "branco 30 cm": {
+        model: "Redonda",
+        color: "Branco",
+        size: "30 cm",
+        pieces: 3
+      },
+      "preto 30 cm": {
+        model: "Redonda",
+        color: "Preto",
+        size: "30 cm",
+        pieces: 3
+      },
+      "branco 16 cm": {
+        model: "Redonda",
+        color: "Branco",
+        size: "16 cm",
+        pieces: 3
+      }
+    }
+  },
+
+  {
+    titleIncludes: [
+      "kit 3 prateleiras canto quina diamante",
+      "kit 3 prateleiras de canto diamante"
+    ],
+    variations: {
+      "branco 20 cm": {
+        model: "Diamante",
+        color: "Branco",
+        size: "20 cm",
+        pieces: 3
+      },
+      "preto 20 cm": {
+        model: "Diamante",
+        color: "Preto",
+        size: "20 cm",
+        pieces: 3
+      },
+      "branco 25 cm": {
+        model: "Diamante",
+        color: "Branco",
+        size: "25 cm",
+        pieces: 3
+      },
+      "preto 25 cm": {
+        model: "Diamante",
+        color: "Preto",
+        size: "25 cm",
+        pieces: 3
+      },
+      "branco 30 cm": {
+        model: "Diamante",
+        color: "Branco",
+        size: "30 cm",
+        pieces: 3
+      },
+      "preto 30 cm": {
+        model: "Diamante",
+        color: "Preto",
+        size: "30 cm",
+        pieces: 3
+      }
+    }
+  },
+
+  {
+    titleIncludes: [
+      "prateleira de canto flutuante decorativa mdf 30 cm"
+    ],
+    variations: {
+      "branco": {
+        model: "Redonda",
+        color: "Branco",
+        size: "30 cm",
+        pieces: 1
+      },
+      "branca": {
+        model: "Redonda",
+        color: "Branco",
+        size: "30 cm",
+        pieces: 1
+      },
+      "preto": {
+        model: "Redonda",
+        color: "Preto",
+        size: "30 cm",
+        pieces: 1
+      }
+    }
+  },
+
+  {
+    titleIncludes: [
+      "kit 2 prateleiras de canto"
+    ],
+    variations: {
+      "branco 15 cm": {
+        model: "Redonda",
+        color: "Branco",
+        size: "15 cm",
+        pieces: 2
+      },
+      "branco 20 cm": {
+        model: "Redonda",
+        color: "Branco",
+        size: "20 cm",
+        pieces: 2
+      },
+      "branco 25 cm": {
+        model: "Redonda",
+        color: "Branco",
+        size: "25 cm",
+        pieces: 2
+      },
+      "branco 30 cm": {
+        model: "Redonda",
+        color: "Branco",
+        size: "30 cm",
+        pieces: 2
+      },
+      "preto 20 cm": {
+        model: "Redonda",
+        color: "Preto",
+        size: "20 cm",
+        pieces: 2
+      },
+      "preto 25 cm": {
+        model: "Redonda",
+        color: "Preto",
+        size: "25 cm",
+        pieces: 2
+      },
+      "preto 30 cm": {
+        model: "Redonda",
+        color: "Preto",
+        size: "30 cm",
+        pieces: 2
+      }
+    }
+  },
+
+  {
+    titleIncludes: [
+      "prateleira para quarto e banheiro kit 3"
+    ],
+    variations: {
+      "branco 25 cm": {
+        model: "Redonda",
+        color: "Branco",
+        size: "25 cm",
+        pieces: 1
+      },
+      "branco 30 cm": {
+        model: "Redonda",
+        color: "Branco",
+        size: "30 cm",
+        pieces: 1
+      }
+    }
+  },
+
+  {
+    titleIncludes: [
+      "3 ganchos penduradores"
+    ],
+    variations: {
+      "branco": {
+        model: "Gancho",
+        color: "Branco",
+        size: "",
+        pieces: 3
+      },
+      "preto": {
+        model: "Gancho",
+        color: "Preto",
+        size: "",
+        pieces: 3
+      }
+    }
+  }
+];
 
 let catalog = loadCatalog();
 let selectedFile = null;
 let lastRows = [];
 
-/*
-=========================================================
-FUNÇÕES AUXILIARES
-=========================================================
-*/
-
-function getElement(id) {
+function element(id) {
   return document.getElementById(id);
 }
 
 function setText(id, value) {
-  const element = getElement(id);
+  const target = element(id);
 
-  if (element) {
-    element.textContent = value ?? 0;
+  if (target) {
+    target.textContent = value;
   }
 }
 
@@ -268,54 +371,47 @@ function normalizeText(value) {
     .replace(/\s+/g, " ");
 }
 
-function normalizeSearchText(value) {
+function normalizeSearch(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/branc0/g, "branco")
     .replace(/\s+/g, " ");
 }
 
 function onlyDigits(value) {
-  return String(value ?? "").replace(/\D/g, "");
+  return String(value ?? "")
+    .replace(/\D/g, "");
 }
 
 function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (character) => {
-    const entities = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    };
+  return String(value ?? "")
+    .replace(/[&<>"']/g, (character) => {
+      const map = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      };
 
-    return entities[character];
-  });
+      return map[character];
+    });
 }
 
 function parseNumber(value) {
   if (typeof value === "number") {
-    return value;
+    return Number.isFinite(value)
+      ? value
+      : 0;
   }
 
-  let text = String(value ?? "").trim();
-
-  if (!text) {
-    return 0;
-  }
-
-  text = text
+  let text = String(value ?? "")
+    .trim()
     .replace(/\s/g, "")
     .replace("R$", "");
-
-  /*
-  Caso contenha vírgula, considera formato brasileiro.
-
-  Exemplo:
-  1.234,56 → 1234.56
-  */
 
   if (text.includes(",")) {
     text = text
@@ -323,97 +419,83 @@ function parseNumber(value) {
       .replace(",", ".");
   }
 
-  const number = Number(text);
+  const parsed = Number(text);
 
-  return Number.isFinite(number) ? number : 0;
+  return Number.isFinite(parsed)
+    ? parsed
+    : 0;
 }
-
-/*
-=========================================================
-CATÁLOGO SALVO NO NAVEGADOR
-=========================================================
-*/
 
 function loadCatalog() {
   try {
-    const savedCatalog = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(
+      STORAGE_KEY
+    );
 
-    if (!savedCatalog) {
-      return [...defaultCatalog];
+    if (!stored) {
+      return structuredClone(DEFAULT_CATALOG);
     }
 
-    const parsedCatalog = JSON.parse(savedCatalog);
+    const parsed = JSON.parse(stored);
 
-    if (!Array.isArray(parsedCatalog)) {
-      return [...defaultCatalog];
-    }
-
-    /*
-    Adiciona automaticamente os produtos padrão que ainda
-    não estejam no catálogo salvo.
-    */
-
-    const combinedCatalog = [...parsedCatalog];
-
-    defaultCatalog.forEach((defaultProduct) => {
-      const exists = combinedCatalog.some((product) => {
-        return product.modelId === defaultProduct.modelId;
-      });
-
-      if (!exists) {
-        combinedCatalog.push(defaultProduct);
-      }
-    });
-
-    return combinedCatalog;
+    return Array.isArray(parsed)
+      ? parsed
+      : structuredClone(DEFAULT_CATALOG);
   } catch (error) {
-    console.error("Erro ao carregar o catálogo:", error);
+    console.error(error);
 
-    return [...defaultCatalog];
+    return structuredClone(DEFAULT_CATALOG);
   }
 }
 
 function saveCatalog() {
-  try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(catalog)
-    );
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(catalog)
+  );
 
-    renderCatalog();
-  } catch (error) {
-    console.error("Erro ao salvar o catálogo:", error);
-
-    alert(
-      "Não foi possível salvar o cadastro no navegador."
-    );
-  }
+  renderCatalog();
 }
 
-/*
-=========================================================
-LOCALIZAÇÃO DAS COLUNAS DA PLANILHA
-=========================================================
-*/
-
 function normalizeColumnName(value) {
-  return normalizeSearchText(value)
+  return normalizeSearch(value)
     .replace(/[º°]/g, "")
     .replace(/[._-]/g, " ");
 }
 
-function findExactColumnValue(row, aliases) {
-  const normalizedAliases = aliases.map(normalizeColumnName);
+function findColumn(row, exactNames, partialNames = []) {
+  const entries = Object.entries(row);
 
-  for (const [columnName, value] of Object.entries(row)) {
-    const normalizedColumn = normalizeColumnName(columnName);
+  const normalizedExact = exactNames.map(
+    normalizeColumnName
+  );
 
+  for (const [name, value] of entries) {
     if (
-      normalizedAliases.includes(normalizedColumn) &&
-      value !== undefined &&
-      value !== null &&
-      String(value).trim() !== ""
+      normalizedExact.includes(
+        normalizeColumnName(name)
+      ) &&
+      value !== ""
     ) {
+      return value;
+    }
+  }
+
+  const normalizedPartial = partialNames.map(
+    normalizeColumnName
+  );
+
+  for (const [name, value] of entries) {
+    const normalizedName =
+      normalizeColumnName(name);
+
+    const match = normalizedPartial.some(
+      (partial) => {
+        return normalizedName.includes(partial);
+      }
+    );
+
+    if (match && value !== "") {
       return value;
     }
   }
@@ -421,97 +503,43 @@ function findExactColumnValue(row, aliases) {
   return "";
 }
 
-function findPartialColumnValue(row, aliases) {
-  const normalizedAliases = aliases.map(normalizeColumnName);
-
-  for (const [columnName, value] of Object.entries(row)) {
-    const normalizedColumn = normalizeColumnName(columnName);
-
-    const found = normalizedAliases.some((alias) => {
-      return normalizedColumn.includes(alias);
-    });
-
-    if (
-      found &&
-      value !== undefined &&
-      value !== null &&
-      String(value).trim() !== ""
-    ) {
-      return value;
-    }
-  }
-
-  return "";
-}
-
-function findColumnValue(row, exactAliases, partialAliases = []) {
-  const exactValue = findExactColumnValue(
-    row,
-    exactAliases
-  );
-
-  if (exactValue !== "") {
-    return exactValue;
-  }
-
-  return findPartialColumnValue(
-    row,
-    partialAliases
-  );
-}
-
-/*
-=========================================================
-NORMALIZAÇÃO DAS LINHAS DA PLANILHA
-=========================================================
-*/
-
-function normalizeSpreadsheetRow(row, rowIndex) {
+function normalizeRow(row, index) {
   const order = normalizeText(
-    findColumnValue(
+    findColumn(
       row,
       [
         "ID do pedido",
         "Nº de Pedido",
-        "Nº do pedido",
         "Número do pedido",
-        "Numero do pedido",
         "Order ID"
       ],
       [
         "id do pedido",
-        "numero do pedido",
-        "n do pedido"
+        "numero do pedido"
       ]
     )
   );
 
   const title = normalizeText(
-    findColumnValue(
+    findColumn(
       row,
       [
         "Nome do Produto",
-        "Nome do produto",
         "Título do produto",
-        "Titulo do produto",
-        "Título & Variação",
-        "Titulo & Variacao"
+        "Título & Variação"
       ],
       [
         "nome do produto",
-        "titulo do produto",
-        "titulo variacao"
+        "titulo"
       ]
     )
   );
 
   const variation = normalizeText(
-    findColumnValue(
+    findColumn(
       row,
       [
         "Nome da Variação",
-        "Nome da variação",
-        "Nome da Variacao",
         "Variação",
         "Variacao"
       ],
@@ -522,172 +550,179 @@ function normalizeSpreadsheetRow(row, rowIndex) {
     )
   );
 
-  /*
-  Primeiro busca quantidade por nome exato.
-  Isso evita confundir com quantidade devolvida,
-  cancelada ou reembolsada.
-  */
-
-  const quantityRaw = findColumnValue(
+  const quantityRaw = findColumn(
     row,
     [
       "Quantidade",
       "Qtd.",
       "Qtd",
       "Quantity"
-    ],
-    []
+    ]
   );
 
-  const parsedQuantity = parseNumber(quantityRaw);
+  const quantity = Math.floor(
+    parseNumber(quantityRaw)
+  );
 
-  /*
-  Quantidade inválida não será automaticamente
-  transformada em 1. Ela será marcada como zero.
-  */
-
-  const quantity =
-    parsedQuantity > 0
-      ? Math.floor(parsedQuantity)
-      : 0;
-
-  /*
-  Procura o identificador em diferentes colunas.
-
-  Na lista da UpSeller, o Model ID pode aparecer
-  na coluna chamada SKU.
-  */
-
-  const modelIdRaw = findColumnValue(
+  const modelIdRaw = findColumn(
     row,
     [
       "Model ID",
-      "Model Id",
       "ID do Modelo",
-      "Id do Modelo",
       "ID da Variação",
-      "Id da Variação",
       "ID da Variacao",
       "SKU",
       "Número de referência SKU",
-      "Numero de referencia SKU",
-      "Nº de referência SKU"
+      "Numero de referencia SKU"
     ],
     [
       "model id",
       "id do modelo",
-      "id da variacao",
       "referencia sku"
     ]
   );
 
   const status = normalizeText(
-    findColumnValue(
+    findColumn(
       row,
       [
         "Status do pedido",
         "Status",
-        "Situação do pedido",
-        "Situacao do pedido"
+        "Situação do pedido"
       ],
       [
         "status do pedido",
-        "situacao do pedido"
+        "situacao"
       ]
     )
   );
 
   return {
-    internalRowId: rowIndex + 1,
+    rowNumber: index + 1,
     order,
     title,
     variation,
     qty: quantity,
     modelId: onlyDigits(modelIdRaw),
-    status,
-    originalRow: row
+    status
   };
 }
 
-/*
-=========================================================
-STATUS DE PEDIDOS
-=========================================================
-*/
+function invalidStatus(status) {
+  const text = normalizeSearch(status);
 
-function isInvalidOrderStatus(status) {
-  const normalizedStatus = normalizeSearchText(status);
-
-  if (!normalizedStatus) {
+  if (!text) {
     return false;
   }
 
-  const invalidStatuses = [
+  return [
     "cancelado",
     "cancelada",
-    "cancelled",
     "reembolsado",
     "reembolsada",
-    "refunded",
     "devolvido",
     "devolvida",
-    "falha no pagamento",
     "pagamento falhou"
-  ];
-
-  return invalidStatuses.some((invalidStatus) => {
-    return normalizedStatus.includes(invalidStatus);
+  ].some((invalid) => {
+    return text.includes(invalid);
   });
 }
 
-/*
-=========================================================
-IDENTIFICAÇÃO DO MODEL ID
-=========================================================
-*/
-
-function resolveModelId(row) {
-  if (row.modelId) {
-    const exactProduct = catalog.find((product) => {
-      return product.modelId === row.modelId;
-    });
-
-    if (exactProduct) {
-      return row.modelId;
-    }
+function findByModelId(modelId) {
+  if (!modelId) {
+    return null;
   }
 
-  /*
-  Caso o número esteja dentro do título ou variação.
-  */
-
-  const searchableText = [
-    row.title,
-    row.variation,
-    row.modelId
-  ].join(" ");
-
-  for (const product of catalog) {
-    if (
-      searchableText.includes(product.modelId)
-    ) {
-      return product.modelId;
-    }
-  }
-
-  return row.modelId;
+  return catalog.find((product) => {
+    return product.modelId === modelId;
+  }) || null;
 }
 
-/*
-=========================================================
-CLASSIFICAÇÃO FÍSICA DO PRODUTO
-=========================================================
-*/
+function findByTitleAndVariation(row) {
+  const normalizedTitle =
+    normalizeSearch(row.title);
 
-function getPhysicalCategory(product) {
-  const text = normalizeSearchText(
-    `${product.model} ${product.detail}`
+  const normalizedVariation =
+    normalizeSearch(row.variation);
+
+  for (const rule of TITLE_RULES) {
+    const titleMatches =
+      rule.titleIncludes.some((text) => {
+        return normalizedTitle.includes(text);
+      });
+
+    if (!titleMatches) {
+      continue;
+    }
+
+    const directMatch =
+      rule.variations[normalizedVariation];
+
+    if (directMatch) {
+      return {
+        modelId: "",
+        detail: "Regra por título e variação",
+        ...directMatch
+      };
+    }
+
+    for (
+      const [
+        variationName,
+        product
+      ] of Object.entries(rule.variations)
+    ) {
+      if (
+        normalizedVariation.includes(
+          variationName
+        )
+      ) {
+        return {
+          modelId: "",
+          detail: "Regra por título e variação",
+          ...product
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+function resolveProduct(row) {
+  const productById = findByModelId(
+    row.modelId
   );
+
+  if (productById) {
+    return {
+      source: "model-id",
+      product: productById
+    };
+  }
+
+  const productByText =
+    findByTitleAndVariation(row);
+
+  if (productByText) {
+    return {
+      source: "title-variation",
+      product: productByText
+    };
+  }
+
+  return {
+    source: "unknown",
+    product: null
+  };
+}
+
+function normalizedCategory(model) {
+  const text = normalizeSearch(model);
+
+  if (text.includes("diamante")) {
+    return "Diamante";
+  }
 
   if (
     text.includes("gancho") ||
@@ -696,36 +731,26 @@ function getPhysicalCategory(product) {
     return "Gancho";
   }
 
-  if (text.includes("diamante")) {
-    return "Diamante";
-  }
-
   if (
     text.includes("redonda") ||
-    text.includes("meia lua") ||
-    text.includes("meia-lua") ||
-    text.includes("canto")
+    text.includes("meia lua")
   ) {
     return "Redonda";
   }
 
-  return product.model || "Outro";
+  return "Outro";
 }
 
-function getNormalizedColor(color) {
-  const normalizedColor = normalizeSearchText(color);
+function normalizedColor(color) {
+  const text = normalizeSearch(color);
 
-  if (
-    normalizedColor.includes("preto") ||
-    normalizedColor.includes("preta")
-  ) {
+  if (text.includes("preto")) {
     return "Preto";
   }
 
   if (
-    normalizedColor.includes("branco") ||
-    normalizedColor.includes("branca") ||
-    normalizedColor.includes("branc0")
+    text.includes("branco") ||
+    text.includes("branca")
   ) {
     return "Branco";
   }
@@ -733,36 +758,13 @@ function getNormalizedColor(color) {
   return color || "Outra";
 }
 
-function getSizeNumber(size) {
-  const number = Number(
-    onlyDigits(size)
-  );
-
-  return Number.isFinite(number)
-    ? number
-    : 0;
-}
-
-/*
-=========================================================
-PROCESSAMENTO DOS PEDIDOS
-=========================================================
-*/
-
-function processNormalizedRows(rows) {
+function processRows(rows) {
   lastRows = rows;
 
-  const recognized = [];
-  const review = [];
-  const ignored = [];
   const groups = new Map();
-  const uniqueOrders = new Set();
-
-  /*
-  Evita duplicidade idêntica dentro do mesmo arquivo.
-  */
-
-  const processedLines = new Set();
+  const review = [];
+  const recognized = [];
+  const orderIds = new Set();
 
   rows.forEach((row) => {
     if (
@@ -774,194 +776,117 @@ function processNormalizedRows(rows) {
       return;
     }
 
-    if (isInvalidOrderStatus(row.status)) {
-      ignored.push({
-        ...row,
-        reason: "Status inválido"
-      });
-
+    if (invalidStatus(row.status)) {
       return;
     }
 
     if (row.qty <= 0) {
       review.push({
         ...row,
-        reviewReason: "Quantidade inválida ou vazia"
+        reason: "Quantidade inválida"
       });
 
       return;
     }
 
     if (row.order) {
-      uniqueOrders.add(row.order);
+      orderIds.add(row.order);
     }
 
-    row.modelId = resolveModelId(row);
+    const resolution = resolveProduct(row);
 
-    /*
-    A chave considera pedido, Model ID, variação,
-    quantidade e número da linha.
-
-    O número da linha evita apagar pedidos legítimos
-    com o mesmo produto repetido.
-    */
-
-    const duplicateKey = [
-      row.order,
-      row.modelId,
-      row.variation,
-      row.qty,
-      row.internalRowId
-    ].join("|");
-
-    if (processedLines.has(duplicateKey)) {
-      return;
-    }
-
-    processedLines.add(duplicateKey);
-
-    const product = catalog.find((catalogProduct) => {
-      return catalogProduct.modelId === row.modelId;
-    });
-
-    if (!product) {
+    if (!resolution.product) {
       review.push({
         ...row,
-        reviewReason: row.modelId
-          ? "Model ID ainda não cadastrado"
-          : "Model ID não encontrado na planilha"
+        reason: row.modelId
+          ? "ID/SKU não cadastrado"
+          : "Produto ainda não reconhecido"
       });
 
       return;
     }
 
-    /*
-    MATEMÁTICA PRINCIPAL
+    const product = resolution.product;
 
-    Quantidade comprada × peças por venda
-    */
-
-    const totalPieces =
+    const pieces =
       row.qty *
       Number(product.pieces || 0);
 
-    if (totalPieces <= 0) {
+    if (pieces <= 0) {
       review.push({
         ...row,
-        reviewReason: "Cadastro sem quantidade de peças"
+        reason: "Quantidade de peças não configurada"
       });
 
       return;
     }
 
-    const physicalCategory =
-      getPhysicalCategory(product);
+    const category =
+      normalizedCategory(product.model);
 
-    const normalizedColor =
-      getNormalizedColor(product.color);
+    const color =
+      normalizedColor(product.color);
 
-    recognized.push({
-      ...row,
-      product,
-      physicalCategory,
-      normalizedColor,
-      total: totalPieces
-    });
-
-    /*
-    A informação Unitária, Kit 2 ou Kit 3
-    não entra na chave da produção.
-
-    Exemplo:
-
-    Unitária branca 30 cm
-    Kit 2 branco 30 cm
-    Kit 3 branco 30 cm
-
-    Tudo será somado como:
-
-    Redonda | Branco | 30 cm
-    */
+    const size =
+      normalizeText(product.size);
 
     const groupKey = [
-      physicalCategory,
-      normalizedColor,
-      product.size || ""
+      category,
+      color,
+      size
     ].join("|");
-
-    const previousQuantity =
-      groups.get(groupKey) || 0;
 
     groups.set(
       groupKey,
-      previousQuantity + totalPieces
+      (groups.get(groupKey) || 0) + pieces
     );
+
+    recognized.push({
+      row,
+      product,
+      category,
+      color,
+      pieces,
+      source: resolution.source
+    });
   });
 
-  renderResults({
-    recognized,
-    review,
-    ignored,
-    groups,
-    orders:
-      uniqueOrders.size ||
+  const totalPieces =
+    Array.from(groups.values())
+      .reduce((sum, value) => {
+        return sum + value;
+      }, 0);
+
+  setText(
+    "metricOrders",
+    orderIds.size ||
       recognized.length +
-      review.length,
+      review.length
+  );
 
-    lines: rows.length
-  });
-}
+  setText(
+    "metricPieces",
+    totalPieces
+  );
 
-/*
-=========================================================
-RESULTADO GERAL
-=========================================================
-*/
+  setText(
+    "metricReview",
+    review.length
+  );
 
-function renderResults({
-  recognized,
-  review,
-  ignored,
-  groups,
-  orders,
-  lines
-}) {
-  setText("metricOrders", orders);
-  setText("metricLines", lines);
+  setText(
+    "reviewSummaryCount",
+    review.length
+  );
 
-  const totalPieces = Array.from(
-    groups.values()
-  ).reduce((sum, quantity) => {
-    return sum + quantity;
-  }, 0);
-
-  setText("metricPieces", totalPieces);
-  setText("metricReview", review.length);
-
-  const printButton = getElement("printBtn");
-
-  if (printButton) {
-    printButton.disabled =
-      groups.size === 0;
-  }
+  element("printBtn").disabled =
+    totalPieces === 0;
 
   renderProduction(groups);
-  renderRecognized(recognized);
   renderReview(review);
-
-  console.log("Pedidos reconhecidos:", recognized);
-  console.log("Pedidos para revisão:", review);
-  console.log("Pedidos ignorados:", ignored);
-  console.log("Grupos de produção:", groups);
 }
 
-/*
-=========================================================
-PAINEL VISUAL DA PRODUÇÃO
-=========================================================
-*/
-
-function createEmptyProductionState() {
+function emptyProduction() {
   return {
     round: {
       white: {
@@ -970,7 +895,6 @@ function createEmptyProductionState() {
         25: 0,
         30: 0
       },
-
       black: {
         16: 0,
         20: 0,
@@ -985,7 +909,6 @@ function createEmptyProductionState() {
         25: 0,
         30: 0
       },
-
       black: {
         20: 0,
         25: 0,
@@ -996,137 +919,117 @@ function createEmptyProductionState() {
     hooks: {
       white: 0,
       black: 0
-    }
+    },
+
+    other: []
   };
 }
 
-function renderProduction(groups) {
-  const production =
-    createEmptyProductionState();
+function sizeNumber(size) {
+  return Number(onlyDigits(size)) || 0;
+}
 
-  for (const [key, quantity] of groups.entries()) {
+function renderProduction(groups) {
+  const production = emptyProduction();
+
+  for (const [key, quantity] of groups) {
     const [
       category,
       color,
       size
     ] = key.split("|");
 
-    const normalizedCategory =
-      normalizeSearchText(category);
-
-    const normalizedColor =
-      normalizeSearchText(color);
-
-    const sizeNumber =
-      getSizeNumber(size);
+    const categoryText =
+      normalizeSearch(category);
 
     const colorKey =
-      normalizedColor.includes("preto")
+      normalizeSearch(color).includes("preto")
         ? "black"
         : "white";
 
-    /*
-    GANCHOS
-    */
+    const measurement =
+      sizeNumber(size);
 
-    if (
-      normalizedCategory.includes("gancho") ||
-      normalizedCategory.includes("pendurador")
-    ) {
+    if (categoryText.includes("gancho")) {
       production.hooks[colorKey] += quantity;
-
       continue;
     }
 
-    /*
-    DIAMANTE
-    */
-
-    if (
-      normalizedCategory.includes("diamante")
-    ) {
+    if (categoryText.includes("diamante")) {
       if (
-        Object.prototype.hasOwnProperty.call(
+        Object.hasOwn(
           production.diamond[colorKey],
-          sizeNumber
+          measurement
         )
       ) {
-        production.diamond[colorKey][sizeNumber] +=
+        production.diamond[colorKey][measurement] +=
           quantity;
+      } else {
+        production.other.push({
+          name: `${category} ${color} ${size}`,
+          quantity
+        });
       }
 
       continue;
     }
 
-    /*
-    REDONDA / MEIA-LUA
-    */
-
-    if (
-      normalizedCategory.includes("redonda") ||
-      normalizedCategory.includes("meia lua")
-    ) {
+    if (categoryText.includes("redonda")) {
       if (
-        Object.prototype.hasOwnProperty.call(
+        Object.hasOwn(
           production.round[colorKey],
-          sizeNumber
+          measurement
         )
       ) {
-        production.round[colorKey][sizeNumber] +=
+        production.round[colorKey][measurement] +=
           quantity;
+      } else {
+        production.other.push({
+          name: `${category} ${color} ${size}`,
+          quantity
+        });
       }
+
+      continue;
     }
+
+    production.other.push({
+      name: `${category} ${color} ${size}`,
+      quantity
+    });
   }
 
-  /*
-  TOTAIS REDONDAS
-  */
-
   const roundWhiteTotal =
-    production.round.white[16] +
-    production.round.white[20] +
-    production.round.white[25] +
-    production.round.white[30];
+    Object.values(
+      production.round.white
+    ).reduce((sum, value) => sum + value, 0);
 
   const roundBlackTotal =
-    production.round.black[16] +
-    production.round.black[20] +
-    production.round.black[25] +
-    production.round.black[30];
+    Object.values(
+      production.round.black
+    ).reduce((sum, value) => sum + value, 0);
 
   const roundTotal =
     roundWhiteTotal +
     roundBlackTotal;
 
-  /*
-  TOTAIS DIAMANTE
-  */
-
   const diamondWhiteTotal =
-    production.diamond.white[20] +
-    production.diamond.white[25] +
-    production.diamond.white[30];
+    Object.values(
+      production.diamond.white
+    ).reduce((sum, value) => sum + value, 0);
 
   const diamondBlackTotal =
-    production.diamond.black[20] +
-    production.diamond.black[25] +
-    production.diamond.black[30];
+    Object.values(
+      production.diamond.black
+    ).reduce((sum, value) => sum + value, 0);
 
   const diamondTotal =
     diamondWhiteTotal +
     diamondBlackTotal;
 
-  /*
-  TOTAIS GANCHOS
-  */
-
   const hookTotal =
     production.hooks.white +
     production.hooks.black;
-
-  /*
-  PREENCHE PRATELEIRAS REDONDAS
-  */
 
   setText(
     "roundWhite16",
@@ -1183,10 +1086,6 @@ function renderProduction(groups) {
     `${roundTotal} peças`
   );
 
-  /*
-  PREENCHE PRATELEIRAS DIAMANTE
-  */
-
   setText(
     "diamondWhite20",
     production.diamond.white[20]
@@ -1232,10 +1131,6 @@ function renderProduction(groups) {
     `${diamondTotal} peças`
   );
 
-  /*
-  PREENCHE GANCHOS
-  */
-
   setText(
     "hookWhite",
     production.hooks.white
@@ -1251,150 +1146,148 @@ function renderProduction(groups) {
     `${hookTotal} unidades`
   );
 
-  /*
-  MOSTRA OU ESCONDE O RESULTADO
-  */
+  renderOtherProducts(
+    production.other
+  );
 
-  const hasProduction =
+  const total =
     roundTotal +
     diamondTotal +
-    hookTotal > 0;
-
-  const emptyElement =
-    getElement("productionEmpty");
-
-  const resultElement =
-    getElement("productionResult");
-
-  if (emptyElement) {
-    emptyElement.classList.toggle(
-      "hidden",
-      hasProduction
+    hookTotal +
+    production.other.reduce(
+      (sum, item) => {
+        return sum + item.quantity;
+      },
+      0
     );
-  }
 
-  if (resultElement) {
-    resultElement.classList.toggle(
+  element("productionEmpty")
+    .classList
+    .toggle(
       "hidden",
-      !hasProduction
+      total > 0
     );
-  }
+
+  element("productionResult")
+    .classList
+    .toggle(
+      "hidden",
+      total === 0
+    );
+
+  element("roundPanel")
+    .classList
+    .toggle(
+      "hidden",
+      roundTotal === 0
+    );
+
+  element("diamondPanel")
+    .classList
+    .toggle(
+      "hidden",
+      diamondTotal === 0
+    );
+
+  element("hookPanel")
+    .classList
+    .toggle(
+      "hidden",
+      hookTotal === 0
+    );
 }
 
-/*
-=========================================================
-PEDIDOS RECONHECIDOS
-=========================================================
-*/
+function renderOtherProducts(items) {
+  const panel = element("otherPanel");
+  const container = element("otherProducts");
 
-function renderRecognized(recognized) {
-  const body = getElement("recognizedBody");
+  container.innerHTML = "";
 
-  if (!body) {
+  if (!items.length) {
+    panel.classList.add("hidden");
     return;
   }
 
-  body.innerHTML = "";
+  const total = items.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
 
-  recognized.forEach((row) => {
-    const productionDescription = [
-      row.physicalCategory,
-      row.normalizedColor,
-      row.product.size
-    ]
-      .filter(Boolean)
-      .join(" — ");
+  setText(
+    "otherTotal",
+    `${total} unidades`
+  );
 
+  items.forEach((item) => {
     const html = `
-      <tr>
-        <td>${escapeHtml(row.order || "—")}</td>
+      <div class="other-item">
+        <span>
+          ${escapeHtml(item.name)}
+        </span>
 
-        <td>${escapeHtml(row.modelId || "—")}</td>
-
-        <td>
-          ${escapeHtml(productionDescription)}
-        </td>
-
-        <td>${row.qty}</td>
-
-        <td>${row.product.pieces}</td>
-
-        <td>
-          <strong>${row.total}</strong>
-        </td>
-      </tr>
+        <strong>
+          ${item.quantity}
+        </strong>
+      </div>
     `;
 
-    body.insertAdjacentHTML(
+    container.insertAdjacentHTML(
       "beforeend",
       html
     );
   });
 
-  toggleTableSection(
-    "recognized",
-    recognized.length > 0
-  );
+  panel.classList.remove("hidden");
 }
 
-/*
-=========================================================
-PRODUTOS PARA REVISÃO
-=========================================================
-*/
-
 function renderReview(review) {
-  const body = getElement("reviewBody");
-
-  if (!body) {
-    return;
-  }
+  const body = element("reviewBody");
 
   body.innerHTML = "";
 
-  review.forEach((row) => {
+  if (!review.length) {
+    element("reviewEmpty")
+      .classList
+      .remove("hidden");
+
+    element("reviewWrap")
+      .classList
+      .add("hidden");
+
+    return;
+  }
+
+  element("reviewEmpty")
+    .classList
+    .add("hidden");
+
+  element("reviewWrap")
+    .classList
+    .remove("hidden");
+
+  review.forEach((row, index) => {
     const html = `
       <tr>
-        <td>
-          ${escapeHtml(row.order || "—")}
-        </td>
+        <td>${escapeHtml(row.order || "—")}</td>
 
-        <td>
-          ${escapeHtml(row.title || "—")}
-        </td>
+        <td>${escapeHtml(row.title || "—")}</td>
 
-        <td>
-          ${escapeHtml(row.variation || "—")}
-        </td>
+        <td>${escapeHtml(row.variation || "—")}</td>
 
-        <td>
-          ${escapeHtml(row.modelId || "Não encontrado")}
-        </td>
+        <td>${escapeHtml(row.modelId || "Não encontrado")}</td>
 
-        <td>
-          ${row.qty || "—"}
-        </td>
+        <td>${row.qty || 0}</td>
+
+        <td>${escapeHtml(row.reason)}</td>
 
         <td>
           <button
             type="button"
-            class="small primary configure-product-button"
-            data-model-id="${escapeHtml(row.modelId)}"
-            data-title="${escapeHtml(row.title)}"
-            data-variation="${escapeHtml(row.variation)}"
+            class="small-button configure-button"
+            data-index="${index}"
           >
             Cadastrar
           </button>
-
-          <small
-            style="
-              display:block;
-              margin-top:6px;
-              color:#b54708;
-            "
-          >
-            ${escapeHtml(row.reviewReason || "")}
-          </small>
         </td>
       </tr>
     `;
@@ -1406,97 +1299,76 @@ function renderReview(review) {
   });
 
   body
-    .querySelectorAll(".configure-product-button")
+    .querySelectorAll(".configure-button")
     .forEach((button) => {
       button.addEventListener(
         "click",
         () => {
-          prefillProductForm({
-            modelId:
-              button.dataset.modelId || "",
+          const row =
+            review[
+              Number(button.dataset.index)
+            ];
 
-            title:
-              button.dataset.title || "",
-
-            variation:
-              button.dataset.variation || ""
-          });
+          fillProductForm(row);
         }
       );
     });
-
-  toggleTableSection(
-    "review",
-    review.length > 0
-  );
 }
 
-function toggleTableSection(prefix, show) {
-  const emptyElement =
-    getElement(`${prefix}Empty`);
+function fillProductForm(row) {
+  element("modelId").value =
+    row.modelId || "";
 
-  const wrapElement =
-    getElement(`${prefix}Wrap`);
+  element("detail").value =
+    [
+      row.title,
+      row.variation
+    ]
+      .filter(Boolean)
+      .join(" — ");
 
-  if (emptyElement) {
-    emptyElement.classList.toggle(
-      "hidden",
-      show
-    );
-  }
+  document
+    .querySelectorAll(".details-box")[1]
+    .open = true;
 
-  if (wrapElement) {
-    wrapElement.classList.toggle(
-      "hidden",
-      !show
-    );
-  }
+  element("model").focus();
+
+  element("catalogForm")
+    .scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
 }
-
-/*
-=========================================================
-LEITURA DO EXCEL
-=========================================================
-*/
 
 async function readSpreadsheet(file) {
   if (!window.XLSX) {
     throw new Error(
-      "A biblioteca de leitura do Excel não foi carregada. Verifique sua conexão com a internet."
+      "A biblioteca de Excel não foi carregada. Atualize a página e verifique sua internet."
     );
   }
 
-  const fileData =
+  const buffer =
     await file.arrayBuffer();
 
   const workbook =
-    XLSX.read(fileData, {
+    XLSX.read(buffer, {
       type: "array"
     });
 
   if (!workbook.SheetNames.length) {
     throw new Error(
-      "A planilha não possui nenhuma aba."
+      "Nenhuma aba encontrada na planilha."
     );
   }
 
-  /*
-  Procura primeiro uma aba chamada orders.
-  Caso não exista, usa a primeira aba.
-  */
-
-  const ordersSheetName =
-    workbook.SheetNames.find((sheetName) => {
-      return normalizeSearchText(sheetName) ===
-        "orders";
-    });
-
-  const selectedSheetName =
-    ordersSheetName ||
+  const sheetName =
+    workbook.SheetNames.find((name) => {
+      return normalizeSearch(name) === "orders";
+    }) ||
     workbook.SheetNames[0];
 
   const worksheet =
-    workbook.Sheets[selectedSheetName];
+    workbook.Sheets[sheetName];
 
   const rawRows =
     XLSX.utils.sheet_to_json(
@@ -1509,100 +1381,142 @@ async function readSpreadsheet(file) {
 
   if (!rawRows.length) {
     throw new Error(
-      "A planilha está vazia ou não contém pedidos."
+      "A planilha não possui pedidos."
     );
   }
 
-  const normalizedRows =
-    rawRows
-      .map(normalizeSpreadsheetRow)
-      .filter((row) => {
-        return (
-          row.order ||
-          row.title ||
-          row.variation ||
-          row.modelId
-        );
-      });
+  const rows = rawRows
+    .map(normalizeRow)
+    .filter((row) => {
+      return (
+        row.order ||
+        row.title ||
+        row.variation ||
+        row.modelId
+      );
+    });
 
-  if (!normalizedRows.length) {
+  if (!rows.length) {
     throw new Error(
-      "Não foi possível localizar linhas de pedidos na planilha."
+      "Não foi possível localizar os pedidos."
     );
   }
 
-  return normalizedRows;
+  return rows;
 }
 
-/*
-=========================================================
-SELEÇÃO E ENVIO DO ARQUIVO
-=========================================================
-*/
-
-function setSelectedFile(file) {
+function selectFile(file) {
   selectedFile = file || null;
 
-  const processButton =
-    getElement("processBtn");
+  element("processBtn").disabled =
+    !selectedFile;
 
-  const fileStatus =
-    getElement("fileStatus");
-
-  if (processButton) {
-    processButton.disabled =
-      !selectedFile;
-  }
-
-  if (fileStatus) {
-    fileStatus.textContent =
-      selectedFile
-        ? `Arquivo selecionado: ${selectedFile.name}`
-        : "Nenhum arquivo selecionado.";
-  }
+  element("fileStatus").textContent =
+    selectedFile
+      ? `Arquivo selecionado: ${selectedFile.name}`
+      : "Nenhum arquivo selecionado.";
 }
 
-function setupFileInput() {
-  const fileInput =
-    getElement("fileInput");
+function renderCatalog() {
+  const body = element("catalogBody");
 
-  if (!fileInput) {
-    return;
-  }
+  body.innerHTML = "";
 
-  fileInput.addEventListener(
+  [...catalog]
+    .sort((a, b) => {
+      return a.modelId.localeCompare(
+        b.modelId,
+        "pt-BR",
+        {
+          numeric: true
+        }
+      );
+    })
+    .forEach((product) => {
+      const html = `
+        <tr>
+          <td>${escapeHtml(product.modelId)}</td>
+          <td>${escapeHtml(product.model)}</td>
+          <td>${escapeHtml(product.color)}</td>
+          <td>${escapeHtml(product.size || "—")}</td>
+          <td>${product.pieces}</td>
+
+          <td>
+            <button
+              type="button"
+              class="delete-button"
+              data-model-id="${escapeHtml(product.modelId)}"
+            >
+              Excluir
+            </button>
+          </td>
+        </tr>
+      `;
+
+      body.insertAdjacentHTML(
+        "beforeend",
+        html
+      );
+    });
+
+  body
+    .querySelectorAll(".delete-button")
+    .forEach((button) => {
+      button.addEventListener(
+        "click",
+        () => {
+          const modelId =
+            button.dataset.modelId;
+
+          const confirmed = confirm(
+            `Excluir o cadastro ${modelId}?`
+          );
+
+          if (!confirmed) {
+            return;
+          }
+
+          catalog = catalog.filter(
+            (product) => {
+              return product.modelId !==
+                modelId;
+            }
+          );
+
+          saveCatalog();
+
+          if (lastRows.length) {
+            processRows(lastRows);
+          }
+        }
+      );
+    });
+}
+
+element("fileInput")
+  .addEventListener(
     "change",
     (event) => {
-      const file =
-        event.target.files?.[0];
-
-      setSelectedFile(file);
+      selectFile(
+        event.target.files[0]
+      );
     }
   );
-}
 
-function setupProcessButton() {
-  const processButton =
-    getElement("processBtn");
-
-  if (!processButton) {
-    return;
-  }
-
-  processButton.addEventListener(
+element("processBtn")
+  .addEventListener(
     "click",
     async () => {
       if (!selectedFile) {
-        alert(
-          "Selecione uma planilha antes de continuar."
-        );
-
         return;
       }
 
+      const button =
+        element("processBtn");
+
       try {
-        processButton.disabled = true;
-        processButton.textContent =
+        button.disabled = true;
+        button.textContent =
           "Processando...";
 
         const rows =
@@ -1610,373 +1524,148 @@ function setupProcessButton() {
             selectedFile
           );
 
-        processNormalizedRows(rows);
+        processRows(rows);
 
-        const fileStatus =
-          getElement("fileStatus");
-
-        if (fileStatus) {
-          fileStatus.textContent =
-            `${rows.length} linha(s) analisada(s) com sucesso.`;
-        }
+        element("fileStatus")
+          .textContent =
+          `${rows.length} linha(s) analisada(s).`;
       } catch (error) {
         console.error(error);
-
-        alert(
-          error.message ||
-          "Ocorreu um erro ao processar a planilha."
-        );
+        alert(error.message);
       } finally {
-        processButton.disabled = false;
-        processButton.textContent =
+        button.disabled = false;
+        button.textContent =
           "Processar planilha";
       }
     }
   );
-}
 
-/*
-=========================================================
-ARRASTAR E SOLTAR PLANILHA
-=========================================================
-*/
-
-function setupDropzone() {
-  const dropzone =
-    getElement("dropzone");
-
-  const fileInput =
-    getElement("fileInput");
-
-  if (!dropzone) {
-    return;
-  }
-
-  [
-    "dragenter",
-    "dragover"
-  ].forEach((eventName) => {
-    dropzone.addEventListener(
-      eventName,
-      (event) => {
-        event.preventDefault();
-
-        dropzone.classList.add("drag");
-      }
-    );
-  });
-
-  [
-    "dragleave",
-    "drop"
-  ].forEach((eventName) => {
-    dropzone.addEventListener(
-      eventName,
-      (event) => {
-        event.preventDefault();
-
-        dropzone.classList.remove("drag");
-      }
-    );
-  });
-
-  dropzone.addEventListener(
-    "drop",
-    (event) => {
-      const file =
-        event.dataTransfer?.files?.[0];
-
-      if (!file) {
-        return;
-      }
-
-      const validExtensions = [
-        ".xlsx",
-        ".xls",
-        ".csv"
-      ];
-
-      const fileName =
-        file.name.toLowerCase();
-
-      const isValid =
-        validExtensions.some((extension) => {
-          return fileName.endsWith(extension);
-        });
-
-      if (!isValid) {
-        alert(
-          "Envie um arquivo Excel ou CSV."
-        );
-
-        return;
-      }
-
-      if (fileInput) {
-        try {
-          const transfer =
-            new DataTransfer();
-
-          transfer.items.add(file);
-
-          fileInput.files =
-            transfer.files;
-        } catch (error) {
-          console.warn(
-            "Não foi possível preencher o campo de arquivo automaticamente.",
-            error
-          );
-        }
-      }
-
-      setSelectedFile(file);
-    }
-  );
-}
-
-/*
-=========================================================
-BOTÃO DE EXEMPLO
-=========================================================
-*/
-
-function setupDemoButton() {
-  const demoButton =
-    getElement("demoBtn");
-
-  if (!demoButton) {
-    return;
-  }
-
-  demoButton.addEventListener(
+element("demoBtn")
+  .addEventListener(
     "click",
     () => {
-      const demoRows = [
+      processRows([
         {
-          internalRowId: 1,
-          order: "EXEMPLO-001",
-          title: "Kit 3 Prateleiras Meia Lua",
+          rowNumber: 1,
+          order: "DEMO-001",
+          title:
+            "Kit 3 Prateleiras de Canto Meia Lua",
           variation: "BRANCO 30 CM",
           qty: 2,
           modelId: "430463424669",
           status: "A enviar"
         },
-
         {
-          internalRowId: 2,
-          order: "EXEMPLO-002",
-          title: "Prateleira Flutuante",
-          variation: "BRANCO",
+          rowNumber: 2,
+          order: "DEMO-002",
+          title:
+            "Prateleira de Canto Flutuante Decorativa MDF 30 cm",
+          variation: "Branco",
           qty: 4,
           modelId: "292651491140",
           status: "A enviar"
         },
-
         {
-          internalRowId: 3,
-          order: "EXEMPLO-003",
-          title: "Kit 3 Diamante",
+          rowNumber: 3,
+          order: "DEMO-003",
+          title:
+            "Kit 3 Prateleiras Canto Quina Diamante",
           variation: "PRETO 25 CM",
-          qty: 1,
+          qty: 2,
           modelId: "360463511212",
           status: "A enviar"
         },
-
         {
-          internalRowId: 4,
-          order: "EXEMPLO-004",
-          title: "Produto não cadastrado",
-          variation: "BRANCO 20 CM",
-          qty: 1,
-          modelId: "999999999999",
+          rowNumber: 4,
+          order: "DEMO-004",
+          title:
+            "3 Ganchos Penduradores",
+          variation: "Branco",
+          qty: 3,
+          modelId: "",
           status: "A enviar"
         }
-      ];
-
-      processNormalizedRows(demoRows);
+      ]);
     }
   );
-}
 
-/*
-=========================================================
-LIMPAR RESULTADOS
-=========================================================
-*/
-
-function clearSystem() {
-  selectedFile = null;
-  lastRows = [];
-
-  const fileInput =
-    getElement("fileInput");
-
-  if (fileInput) {
-    fileInput.value = "";
-  }
-
-  setSelectedFile(null);
-
-  processNormalizedRows([]);
-}
-
-function setupClearButton() {
-  const clearButton =
-    getElement("clearBtn");
-
-  if (!clearButton) {
-    return;
-  }
-
-  clearButton.addEventListener(
+element("clearBtn")
+  .addEventListener(
     "click",
-    clearSystem
+    () => {
+      selectedFile = null;
+      lastRows = [];
+
+      element("fileInput").value = "";
+
+      selectFile(null);
+      processRows([]);
+    }
   );
-}
 
-/*
-=========================================================
-IMPRESSÃO
-=========================================================
-*/
-
-function setupPrintButton() {
-  const printButton =
-    getElement("printBtn");
-
-  if (!printButton) {
-    return;
-  }
-
-  printButton.addEventListener(
+element("printBtn")
+  .addEventListener(
     "click",
     () => {
       window.print();
     }
   );
-}
 
-/*
-=========================================================
-CADASTRO MANUAL DE NOVOS PRODUTOS
-=========================================================
-*/
-
-function prefillProductForm(row) {
-  const modelIdInput =
-    getElement("modelId");
-
-  const detailInput =
-    getElement("detail");
-
-  const modelInput =
-    getElement("model");
-
-  if (modelIdInput) {
-    modelIdInput.value =
-      row.modelId || "";
-  }
-
-  if (detailInput) {
-    detailInput.value = [
-      row.title,
-      row.variation
-    ]
-      .filter(Boolean)
-      .join(" — ");
-  }
-
-  if (modelInput) {
-    modelInput.focus();
-  }
-
-  const form =
-    getElement("catalogForm");
-
-  if (form) {
-    form.scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
-  }
-}
-
-function setupCatalogForm() {
-  const form =
-    getElement("catalogForm");
-
-  if (!form) {
-    return;
-  }
-
-  form.addEventListener(
+element("catalogForm")
+  .addEventListener(
     "submit",
     (event) => {
       event.preventDefault();
 
       const product = {
         modelId: onlyDigits(
-          getElement("modelId")?.value
+          element("modelId").value
         ),
 
-        model: normalizeText(
-          getElement("model")?.value
-        ),
+        model:
+          element("model").value,
 
         color:
-          getElement("color")?.value ||
-          "",
+          element("color").value,
 
         size: normalizeText(
-          getElement("size")?.value
-        ),
-
-        detail: normalizeText(
-          getElement("detail")?.value
+          element("size").value
         ),
 
         pieces: Math.floor(
           parseNumber(
-            getElement("piecesPerSale")?.value
+            element("piecesPerSale").value
           )
+        ),
+
+        detail: normalizeText(
+          element("detail").value
         )
       };
 
       if (!product.modelId) {
         alert(
-          "Informe o Model ID/SKU da variação."
+          "Informe o Model ID ou SKU."
         );
 
         return;
       }
 
-      if (!product.model) {
+      if (
+        !product.model ||
+        !product.color ||
+        product.pieces <= 0
+      ) {
         alert(
-          "Informe o modelo do produto."
-        );
-
-        return;
-      }
-
-      if (!product.color) {
-        alert(
-          "Informe a cor do produto."
-        );
-
-        return;
-      }
-
-      if (product.pieces <= 0) {
-        alert(
-          "Informe quantas peças uma venda gera."
+          "Preencha o produto, a cor e as peças por venda."
         );
 
         return;
       }
 
       const existingIndex =
-        catalog.findIndex((catalogProduct) => {
-          return catalogProduct.modelId ===
+        catalog.findIndex((item) => {
+          return item.modelId ===
             product.modelId;
         });
 
@@ -1989,160 +1678,34 @@ function setupCatalogForm() {
 
       saveCatalog();
 
-      form.reset();
+      event.target.reset();
 
       if (lastRows.length) {
-        processNormalizedRows(lastRows);
+        processRows(lastRows);
       }
+
+      alert(
+        "Produto salvo com sucesso."
+      );
     }
   );
-}
 
-/*
-=========================================================
-EXIBIÇÃO DO CATÁLOGO
-=========================================================
-*/
-
-function renderCatalog() {
-  const catalogBody =
-    getElement("catalogBody");
-
-  if (!catalogBody) {
-    return;
-  }
-
-  catalogBody.innerHTML = "";
-
-  const sortedCatalog =
-    [...catalog].sort((a, b) => {
-      return a.modelId.localeCompare(
-        b.modelId,
-        "pt-BR",
-        {
-          numeric: true
-        }
-      );
-    });
-
-  sortedCatalog.forEach((product) => {
-    const html = `
-      <tr>
-        <td>
-          ${escapeHtml(product.modelId)}
-        </td>
-
-        <td>
-          ${escapeHtml(product.model)}
-        </td>
-
-        <td>
-          ${escapeHtml(product.color)}
-        </td>
-
-        <td>
-          ${escapeHtml(product.size || "—")}
-        </td>
-
-        <td>
-          ${escapeHtml(product.detail || "—")}
-        </td>
-
-        <td>
-          ${product.pieces}
-        </td>
-
-        <td>
-          <button
-            type="button"
-            class="small ghost delete-catalog-button"
-            data-model-id="${escapeHtml(product.modelId)}"
-          >
-            Excluir
-          </button>
-        </td>
-      </tr>
-    `;
-
-    catalogBody.insertAdjacentHTML(
-      "beforeend",
-      html
-    );
-  });
-
-  catalogBody
-    .querySelectorAll(".delete-catalog-button")
-    .forEach((button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          removeCatalogProduct(
-            button.dataset.modelId
-          );
-        }
-      );
-    });
-}
-
-function removeCatalogProduct(modelId) {
-  const product = catalog.find((item) => {
-    return item.modelId === modelId;
-  });
-
-  if (!product) {
-    return;
-  }
-
-  const confirmed = confirm(
-    `Excluir o cadastro ${modelId} — ${product.model}?`
-  );
-
-  if (!confirmed) {
-    return;
-  }
-
-  catalog = catalog.filter((item) => {
-    return item.modelId !== modelId;
-  });
-
-  saveCatalog();
-
-  if (lastRows.length) {
-    processNormalizedRows(lastRows);
-  }
-}
-
-/*
-=========================================================
-EXPORTAR O CATÁLOGO
-=========================================================
-*/
-
-function setupExportCatalogButton() {
-  const exportButton =
-    getElement("exportCatalogBtn");
-
-  if (!exportButton) {
-    return;
-  }
-
-  exportButton.addEventListener(
+element("exportCatalogBtn")
+  .addEventListener(
     "click",
     () => {
-      const content =
-        JSON.stringify(
-          catalog,
-          null,
-          2
-        );
-
-      const blob =
-        new Blob(
-          [content],
-          {
-            type: "application/json"
-          }
-        );
+      const blob = new Blob(
+        [
+          JSON.stringify(
+            catalog,
+            null,
+            2
+          )
+        ],
+        {
+          type: "application/json"
+        }
+      );
 
       const url =
         URL.createObjectURL(blob);
@@ -2152,40 +1715,87 @@ function setupExportCatalogButton() {
 
       link.href = url;
       link.download =
-        "catalogo-producao-shopee.json";
-
-      document.body.appendChild(link);
+        "catalogo-producao.json";
 
       link.click();
-      link.remove();
 
       URL.revokeObjectURL(url);
     }
   );
-}
 
-/*
-=========================================================
-INICIALIZAÇÃO
-=========================================================
-*/
+element("resetCatalogBtn")
+  .addEventListener(
+    "click",
+    () => {
+      const confirmed = confirm(
+        "Restaurar o cadastro inicial? Os produtos adicionados manualmente serão apagados."
+      );
 
-function initializeApplication() {
-  renderCatalog();
+      if (!confirmed) {
+        return;
+      }
 
-  setupFileInput();
-  setupProcessButton();
-  setupDropzone();
-  setupDemoButton();
-  setupClearButton();
-  setupPrintButton();
-  setupCatalogForm();
-  setupExportCatalogButton();
+      catalog =
+        structuredClone(
+          DEFAULT_CATALOG
+        );
 
-  processNormalizedRows([]);
-}
+      saveCatalog();
 
-document.addEventListener(
-  "DOMContentLoaded",
-  initializeApplication
+      if (lastRows.length) {
+        processRows(lastRows);
+      }
+    }
+  );
+
+const dropzone =
+  element("dropzone");
+
+[
+  "dragenter",
+  "dragover"
+].forEach((eventName) => {
+  dropzone.addEventListener(
+    eventName,
+    (event) => {
+      event.preventDefault();
+
+      dropzone.classList.add(
+        "dragging"
+      );
+    }
+  );
+});
+
+[
+  "dragleave",
+  "drop"
+].forEach((eventName) => {
+  dropzone.addEventListener(
+    eventName,
+    (event) => {
+      event.preventDefault();
+
+      dropzone.classList.remove(
+        "dragging"
+      );
+    }
+  );
+});
+
+dropzone.addEventListener(
+  "drop",
+  (event) => {
+    const file =
+      event.dataTransfer.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    selectFile(file);
+  }
 );
+
+renderCatalog();
+processRows([]);
