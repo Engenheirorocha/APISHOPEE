@@ -8,88 +8,732 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>Produção Shopee</title>
+  <title>Produção Shopee e UpSeller</title>
 
-  <link
-    rel="stylesheet"
-    href="./styles.css"
-  >
+  <!-- Leitor de Excel e CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
-    defer
-  ></script>
+  <!-- Leitor de PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-  <script
-    src="./app.js"
-    defer
-  ></script>
+  <style>
+    :root {
+      --background: #f3f6fb;
+      --surface: #ffffff;
+      --soft: #f8fafc;
+      --text: #172033;
+      --muted: #667085;
+      --border: #e4e7ec;
+
+      --orange: #ee4d2d;
+      --orange-dark: #c93b21;
+      --orange-soft: #fff1ed;
+
+      --blue: #2563eb;
+      --blue-soft: #eff6ff;
+
+      --green: #059669;
+      --green-soft: #ecfdf5;
+
+      --red: #dc2626;
+      --red-soft: #fef2f2;
+
+      --shadow:
+        0 12px 30px rgba(16, 24, 40, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+
+      font-family:
+        Inter,
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      background: var(--background);
+      color: var(--text);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .topbar {
+      padding: 28px max(
+        20px,
+        calc((100vw - 1180px) / 2)
+      );
+
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .eyebrow {
+      color: var(--orange);
+
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+    }
+
+    .topbar h1 {
+      margin: 6px 0;
+      font-size: 34px;
+    }
+
+    .topbar p {
+      max-width: 720px;
+      margin: 0;
+
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .version {
+      padding: 9px 14px;
+
+      border: 1px solid #ffc9bc;
+      border-radius: 999px;
+
+      background: var(--orange-soft);
+      color: #a82c17;
+
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: 26px auto 50px;
+    }
+
+    .upload-card,
+    .production-section,
+    .review-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .upload-card {
+      padding: 22px;
+
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .step {
+      color: var(--orange);
+
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+    }
+
+    .upload-card h2,
+    .section-header h2 {
+      margin: 6px 0;
+    }
+
+    .upload-card p,
+    .section-header p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .dropzone {
+      min-height: 155px;
+
+      padding: 20px;
+
+      border: 2px dashed #f3a18f;
+      border-radius: 16px;
+
+      background: #fff9f7;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      text-align: center;
+      transition: 0.2s;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragging {
+      background: #fff0eb;
+      border-color: var(--orange);
+    }
+
+    .dropzone input {
+      display: none;
+    }
+
+    .upload-icon {
+      width: 44px;
+      height: 44px;
+
+      margin-bottom: 10px;
+
+      border-radius: 13px;
+
+      background: var(--orange);
+      color: white;
+
+      display: grid;
+      place-items: center;
+
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .dropzone strong {
+      font-size: 17px;
+    }
+
+    .dropzone small {
+      margin-top: 6px;
+      color: var(--muted);
+    }
+
+    .actions {
+      grid-column: 1 / -1;
+
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .button {
+      padding: 11px 17px;
+
+      border: 0;
+      border-radius: 11px;
+
+      font-weight: 750;
+    }
+
+    .button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .button-primary {
+      background: var(--orange);
+      color: white;
+    }
+
+    .button-primary:hover:not(:disabled) {
+      background: var(--orange-dark);
+    }
+
+    .button-secondary {
+      background: var(--blue-soft);
+      color: #1d4ed8;
+    }
+
+    .button-light {
+      background: #f2f4f7;
+      color: #344054;
+    }
+
+    .button-dark {
+      background: var(--text);
+      color: white;
+    }
+
+    .file-status {
+      grid-column: 1 / -1;
+
+      margin: -5px 0 0 !important;
+
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .summary-grid {
+      margin: 18px 0;
+
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .summary-card {
+      padding: 19px;
+      border-radius: 17px;
+
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-card span {
+      display: block;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .summary-card strong {
+      display: block;
+
+      margin-top: 4px;
+      font-size: 35px;
+    }
+
+    .summary-orange {
+      background: linear-gradient(
+        135deg,
+        #ee4d2d,
+        #f97316
+      );
+    }
+
+    .summary-blue {
+      background: linear-gradient(
+        135deg,
+        #2563eb,
+        #0284c7
+      );
+    }
+
+    .summary-red {
+      background: linear-gradient(
+        135deg,
+        #dc2626,
+        #e11d48
+      );
+    }
+
+    .production-section {
+      padding: 22px;
+    }
+
+    .section-header {
+      margin-bottom: 20px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .empty-state {
+      min-height: 220px;
+
+      padding: 30px;
+
+      border: 2px dashed #d0d5dd;
+      border-radius: 17px;
+
+      background: var(--soft);
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      text-align: center;
+    }
+
+    .empty-state span {
+      font-size: 40px;
+    }
+
+    .empty-state strong {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+
+    .empty-state p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .production-result {
+      display: grid;
+      gap: 18px;
+    }
+
+    .product-panel {
+      overflow: hidden;
+
+      border: 1px solid var(--border);
+      border-radius: 17px;
+
+      background: var(--surface);
+    }
+
+    .panel-header {
+      padding: 17px 19px;
+
+      border-bottom: 1px solid var(--border);
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .panel-title h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .panel-title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .symbol {
+      width: 44px;
+      height: 44px;
+
+      border-radius: 13px;
+
+      display: grid;
+      place-items: center;
+
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .symbol-round {
+      background: var(--orange-soft);
+      color: var(--orange);
+    }
+
+    .symbol-diamond {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .symbol-hook {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .panel-total {
+      padding: 8px 13px;
+
+      border-radius: 999px;
+
+      background: #f2f4f7;
+      color: #344054;
+
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .production-table {
+      min-width: 720px;
+    }
+
+    th {
+      padding: 12px 13px;
+
+      background: var(--soft);
+      color: var(--muted);
+
+      text-align: center;
+      text-transform: uppercase;
+
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    .production-table td {
+      padding: 17px 13px;
+
+      border-top: 1px solid var(--border);
+
+      text-align: center;
+
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .color-name {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+
+      font-size: 15px;
+    }
+
+    .color-dot {
+      width: 18px;
+      height: 18px;
+
+      display: inline-block;
+      flex-shrink: 0;
+
+      border-radius: 50%;
+    }
+
+    .dot-white {
+      background: white;
+      border: 2px solid #98a2b3;
+    }
+
+    .dot-black {
+      background: #101828;
+      border: 2px solid #101828;
+    }
+
+    .total-cell {
+      color: var(--orange);
+      background: #fff9f7;
+    }
+
+    .hook-grid {
+      padding: 18px;
+
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .hook-card {
+      min-height: 105px;
+
+      padding: 18px;
+
+      border: 1px solid var(--border);
+      border-radius: 15px;
+
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .hook-card span:not(.color-dot) {
+      color: var(--muted);
+    }
+
+    .hook-card strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 31px;
+    }
+
+    .review-section {
+      margin-top: 18px;
+      overflow: hidden;
+    }
+
+    .review-section summary {
+      padding: 18px 20px;
+
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .review-table {
+      min-width: 900px;
+    }
+
+    .review-table td {
+      padding: 12px 13px;
+
+      border-top: 1px solid var(--border);
+
+      font-size: 13px;
+    }
+
+    .review-empty {
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .warning {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    .footer {
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 800px) {
+      .topbar,
+      .section-header {
+        flex-direction: column;
+      }
+
+      .upload-card {
+        grid-template-columns: 1fr;
+      }
+
+      .actions,
+      .file-status {
+        grid-column: 1;
+      }
+
+      .summary-grid,
+      .hook-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .topbar,
+      .upload-card,
+      .review-section,
+      .footer,
+      #printButton {
+        display: none !important;
+      }
+
+      .container {
+        width: 100%;
+        margin: 0;
+      }
+
+      .production-section {
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .summary-card {
+        background: white !important;
+        color: black;
+
+        border: 1px solid #ccc;
+        box-shadow: none;
+      }
+
+      .product-panel {
+        break-inside: avoid;
+        margin-bottom: 14px;
+      }
+    }
+  </style>
 </head>
 
 <body>
   <header class="topbar">
     <div>
-      <span class="eyebrow">ORGANIZADOR DE PRODUÇÃO</span>
+      <span class="eyebrow">
+        ORGANIZADOR DE PRODUÇÃO
+      </span>
 
       <h1>Produção do dia</h1>
 
       <p>
-        Envie a planilha da Shopee para calcular automaticamente
-        as peças que precisam ser fabricadas.
+        Envie o PDF da UpSeller ou a planilha da Shopee.
+        O sistema identifica os produtos e calcula as peças físicas.
       </p>
     </div>
 
-    <div class="status-badge">
-      Versão manual
-    </div>
+    <span class="version">
+      PDF + Excel
+    </span>
   </header>
 
   <main class="container">
     <section class="upload-card">
-      <div class="upload-text">
-        <span class="step-label">PASSO 1</span>
+      <div>
+        <span class="step">PASSO 1</span>
 
-        <h2>Enviar planilha</h2>
+        <h2>Enviar arquivo</h2>
 
         <p>
-          Aceita arquivos Excel e CSV exportados da Shopee.
+          Aceita PDF da UpSeller, Excel e CSV da Shopee.
         </p>
       </div>
 
       <label
-        for="fileInput"
         id="dropzone"
         class="dropzone"
+        for="fileInput"
       >
         <input
           id="fileInput"
           type="file"
-          accept=".xlsx,.xls,.csv"
+          accept=".pdf,.xlsx,.xls,.csv"
         >
 
-        <span class="upload-icon">⬆</span>
+        <span class="upload-icon">↑</span>
 
         <strong>
-          Clique ou arraste a planilha aqui
+          Clique ou arraste o arquivo aqui
         </strong>
 
         <small>
-          XLSX, XLS ou CSV
+          PDF, XLSX, XLS ou CSV
         </small>
       </label>
 
-      <div class="upload-actions">
+      <div class="actions">
         <button
-          id="processBtn"
+          id="processButton"
           type="button"
           class="button button-primary"
           disabled
         >
-          Processar planilha
+          Processar arquivo
         </button>
 
         <button
-          id="demoBtn"
+          id="demoButton"
           type="button"
           class="button button-secondary"
         >
@@ -97,7 +741,7 @@
         </button>
 
         <button
-          id="clearBtn"
+          id="clearButton"
           type="button"
           class="button button-light"
         >
@@ -114,37 +758,36 @@
     </section>
 
     <section class="summary-grid">
-      <article class="summary-card card-orange">
+      <article class="summary-card summary-orange">
         <span>Pedidos</span>
-        <strong id="metricOrders">0</strong>
+        <strong id="ordersMetric">0</strong>
       </article>
 
-      <article class="summary-card card-blue">
+      <article class="summary-card summary-blue">
         <span>Peças para fabricar</span>
-        <strong id="metricPieces">0</strong>
+        <strong id="piecesMetric">0</strong>
       </article>
 
-      <article class="summary-card card-red">
+      <article class="summary-card summary-red">
         <span>Para revisar</span>
-        <strong id="metricReview">0</strong>
+        <strong id="reviewMetric">0</strong>
       </article>
     </section>
 
     <section class="production-section">
       <div class="section-header">
         <div>
-          <span class="step-label">PASSO 2</span>
+          <span class="step">PASSO 2</span>
 
           <h2>Ordem de fabricação</h2>
 
           <p>
-            Quantidades já convertidas de unitário, kit com 2
-            e kit com 3 para peças físicas.
+            Quantidades reais, já convertidas de unitários e kits.
           </p>
         </div>
 
         <button
-          id="printBtn"
+          id="printButton"
           type="button"
           class="button button-dark"
           disabled
@@ -154,17 +797,17 @@
       </div>
 
       <div
-        id="productionEmpty"
+        id="emptyState"
         class="empty-state"
       >
-        <span class="empty-icon">📦</span>
+        <span>📦</span>
 
         <strong>
-          Nenhuma planilha processada
+          Nenhum arquivo processado
         </strong>
 
         <p>
-          Envie a planilha para visualizar a produção do dia.
+          Envie o PDF da UpSeller ou a planilha da Shopee.
         </p>
       </div>
 
@@ -174,11 +817,11 @@
       >
         <article
           id="roundPanel"
-          class="product-panel"
+          class="product-panel hidden"
         >
-          <div class="product-panel-header">
-            <div class="product-title">
-              <span class="product-symbol symbol-round">●</span>
+          <div class="panel-header">
+            <div class="panel-title">
+              <span class="symbol symbol-round">●</span>
 
               <div>
                 <h3>Prateleira redonda</h3>
@@ -188,7 +831,7 @@
 
             <strong
               id="roundTotal"
-              class="total-badge"
+              class="panel-total"
             >
               0 peças
             </strong>
@@ -199,6 +842,7 @@
               <thead>
                 <tr>
                   <th>Cor</th>
+                  <th>15 cm</th>
                   <th>16 cm</th>
                   <th>20 cm</th>
                   <th>25 cm</th>
@@ -216,17 +860,12 @@
                     </span>
                   </td>
 
+                  <td id="roundWhite15">0</td>
                   <td id="roundWhite16">0</td>
                   <td id="roundWhite20">0</td>
                   <td id="roundWhite25">0</td>
                   <td id="roundWhite30">0</td>
-
-                  <td
-                    id="roundWhiteTotal"
-                    class="total-cell"
-                  >
-                    0
-                  </td>
+                  <td id="roundWhiteTotal" class="total-cell">0</td>
                 </tr>
 
                 <tr>
@@ -237,17 +876,12 @@
                     </span>
                   </td>
 
+                  <td id="roundBlack15">0</td>
                   <td id="roundBlack16">0</td>
                   <td id="roundBlack20">0</td>
                   <td id="roundBlack25">0</td>
                   <td id="roundBlack30">0</td>
-
-                  <td
-                    id="roundBlackTotal"
-                    class="total-cell"
-                  >
-                    0
-                  </td>
+                  <td id="roundBlackTotal" class="total-cell">0</td>
                 </tr>
               </tbody>
             </table>
@@ -256,11 +890,11 @@
 
         <article
           id="diamondPanel"
-          class="product-panel"
+          class="product-panel hidden"
         >
-          <div class="product-panel-header">
-            <div class="product-title">
-              <span class="product-symbol symbol-diamond">◆</span>
+          <div class="panel-header">
+            <div class="panel-title">
+              <span class="symbol symbol-diamond">◆</span>
 
               <div>
                 <h3>Prateleira diamante</h3>
@@ -270,7 +904,7 @@
 
             <strong
               id="diamondTotal"
-              class="total-badge"
+              class="panel-total"
             >
               0 peças
             </strong>
@@ -300,13 +934,7 @@
                   <td id="diamondWhite20">0</td>
                   <td id="diamondWhite25">0</td>
                   <td id="diamondWhite30">0</td>
-
-                  <td
-                    id="diamondWhiteTotal"
-                    class="total-cell"
-                  >
-                    0
-                  </td>
+                  <td id="diamondWhiteTotal" class="total-cell">0</td>
                 </tr>
 
                 <tr>
@@ -320,13 +948,7 @@
                   <td id="diamondBlack20">0</td>
                   <td id="diamondBlack25">0</td>
                   <td id="diamondBlack30">0</td>
-
-                  <td
-                    id="diamondBlackTotal"
-                    class="total-cell"
-                  >
-                    0
-                  </td>
+                  <td id="diamondBlackTotal" class="total-cell">0</td>
                 </tr>
               </tbody>
             </table>
@@ -335,21 +957,21 @@
 
         <article
           id="hookPanel"
-          class="product-panel"
+          class="product-panel hidden"
         >
-          <div class="product-panel-header">
-            <div class="product-title">
-              <span class="product-symbol symbol-hook">J</span>
+          <div class="panel-header">
+            <div class="panel-title">
+              <span class="symbol symbol-hook">J</span>
 
               <div>
                 <h3>Ganchos penduradores</h3>
-                <p>Quantidade total por cor</p>
+                <p>Quantidade separada por cor</p>
               </div>
             </div>
 
             <strong
               id="hookTotal"
-              class="total-badge"
+              class="panel-total"
             >
               0 unidades
             </strong>
@@ -365,7 +987,7 @@
               </div>
             </div>
 
-            <div class="hook-card hook-card-dark">
+            <div class="hook-card">
               <span class="color-dot dot-black"></span>
 
               <div>
@@ -375,69 +997,35 @@
             </div>
           </div>
         </article>
-
-        <article
-          id="otherPanel"
-          class="product-panel hidden"
-        >
-          <div class="product-panel-header">
-            <div class="product-title">
-              <span class="product-symbol symbol-other">+</span>
-
-              <div>
-                <h3>Outros produtos</h3>
-                <p>Itens que não pertencem aos grupos principais</p>
-              </div>
-            </div>
-
-            <strong
-              id="otherTotal"
-              class="total-badge"
-            >
-              0 unidades
-            </strong>
-          </div>
-
-          <div
-            id="otherProducts"
-            class="other-products"
-          ></div>
-        </article>
       </div>
     </section>
 
-    <details class="details-box">
+    <details class="review-section">
       <summary>
-        Ver produtos que precisam de revisão
-        <span
-          id="reviewSummaryCount"
-          class="summary-count"
-        >
-          0
-        </span>
+        Produtos que precisam de revisão:
+        <span id="reviewCount">0</span>
       </summary>
 
       <div
         id="reviewEmpty"
-        class="small-empty"
+        class="review-empty"
       >
         Nenhum produto pendente.
       </div>
 
       <div
-        id="reviewWrap"
+        id="reviewTableWrapper"
         class="table-wrapper hidden"
       >
-        <table class="admin-table">
+        <table class="review-table">
           <thead>
             <tr>
               <th>Pedido</th>
+              <th>SKU</th>
               <th>Produto</th>
               <th>Variação</th>
-              <th>ID/SKU encontrado</th>
               <th>Quantidade</th>
               <th>Motivo</th>
-              <th>Ação</th>
             </tr>
           </thead>
 
@@ -445,143 +1033,1298 @@
         </table>
       </div>
     </details>
-
-    <details class="details-box">
-      <summary>
-        Configuração dos produtos
-      </summary>
-
-      <div class="config-content">
-        <p class="config-description">
-          Cadastre aqui um produto novo apenas quando ele aparecer
-          na área de revisão.
-        </p>
-
-        <form
-          id="catalogForm"
-          class="catalog-form"
-        >
-          <label>
-            Model ID ou SKU
-
-            <input
-              id="modelId"
-              type="text"
-              placeholder="Ex.: 430463424669"
-              required
-            >
-          </label>
-
-          <label>
-            Tipo do produto
-
-            <select
-              id="model"
-              required
-            >
-              <option value="">Selecione</option>
-              <option value="Redonda">Prateleira redonda</option>
-              <option value="Diamante">Prateleira diamante</option>
-              <option value="Gancho">Gancho pendurador</option>
-              <option value="Outro">Outro produto</option>
-            </select>
-          </label>
-
-          <label>
-            Cor
-
-            <select
-              id="color"
-              required
-            >
-              <option value="">Selecione</option>
-              <option value="Branco">Branco</option>
-              <option value="Preto">Preto</option>
-              <option value="Outra">Outra</option>
-            </select>
-          </label>
-
-          <label>
-            Medida
-
-            <input
-              id="size"
-              type="text"
-              placeholder="Ex.: 30 cm"
-            >
-          </label>
-
-          <label>
-            Peças por venda
-
-            <input
-              id="piecesPerSale"
-              type="number"
-              min="1"
-              step="1"
-              placeholder="Ex.: 3"
-              required
-            >
-          </label>
-
-          <label>
-            Observação
-
-            <input
-              id="detail"
-              type="text"
-              placeholder="Ex.: Kit 3 ou unitária"
-            >
-          </label>
-
-          <button
-            type="submit"
-            class="button button-primary save-button"
-          >
-            Salvar produto
-          </button>
-        </form>
-
-        <div class="config-actions">
-          <button
-            id="exportCatalogBtn"
-            type="button"
-            class="button button-secondary"
-          >
-            Fazer backup do cadastro
-          </button>
-
-          <button
-            id="resetCatalogBtn"
-            type="button"
-            class="button button-danger-outline"
-          >
-            Restaurar cadastro inicial
-          </button>
-        </div>
-
-        <div class="table-wrapper catalog-table-wrapper">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>ID/SKU</th>
-                <th>Produto</th>
-                <th>Cor</th>
-                <th>Medida</th>
-                <th>Peças por venda</th>
-                <th>Ação</th>
-              </tr>
-            </thead>
-
-            <tbody id="catalogBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </details>
   </main>
 
   <footer class="footer">
     Sistema manual preparado para futura integração com a API da Shopee.
   </footer>
+
+  <script>
+    "use strict";
+
+    /*
+    =====================================================
+    CONFIGURAÇÃO DO PDF.JS
+    =====================================================
+    */
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    /*
+    =====================================================
+    CATÁLOGO DE SKUS CONHECIDOS
+    =====================================================
+    */
+
+    const CATALOG = {
+      /*
+      Unitárias redondas
+      */
+
+      "228792214684": {
+        model: "Redonda",
+        color: "Branco",
+        size: 25,
+        pieces: 1,
+        description: "Unitária branca 25 cm"
+      },
+
+      "228792214678": {
+        model: "Redonda",
+        color: "Branco",
+        size: 30,
+        pieces: 1,
+        description: "Unitária branca 30 cm"
+      },
+
+      "292651491139": {
+        model: "Redonda",
+        color: "Preto",
+        size: 30,
+        pieces: 1,
+        description: "Unitária preta 30 cm"
+      },
+
+      "292651491140": {
+        model: "Redonda",
+        color: "Branco",
+        size: 30,
+        pieces: 1,
+        description: "Unitária branca 30 cm"
+      },
+
+      /*
+      Kits com 2 redondas
+      */
+
+      "209613874440": {
+        model: "Redonda",
+        color: "Branco",
+        size: 30,
+        pieces: 2,
+        description: "Kit 2 branco 30 cm"
+      },
+
+      "445867399988": {
+        model: "Redonda",
+        color: "Branco",
+        size: 15,
+        pieces: 2,
+        description: "Kit 2 branco 15 cm"
+      },
+
+      /*
+      Kits com 3 redondas
+      */
+
+      "430463424666": {
+        model: "Redonda",
+        color: "Branco",
+        size: 20,
+        pieces: 3,
+        description: "Kit 3 branco 20 cm"
+      },
+
+      "430463424667": {
+        model: "Redonda",
+        color: "Preto",
+        size: 20,
+        pieces: 3,
+        description: "Kit 3 preto 20 cm"
+      },
+
+      "430463424668": {
+        model: "Redonda",
+        color: "Branco",
+        size: 25,
+        pieces: 3,
+        description: "Kit 3 branco 25 cm"
+      },
+
+      "430463424669": {
+        model: "Redonda",
+        color: "Branco",
+        size: 30,
+        pieces: 3,
+        description: "Kit 3 branco 30 cm"
+      },
+
+      "430463424670": {
+        model: "Redonda",
+        color: "Preto",
+        size: 30,
+        pieces: 3,
+        description: "Kit 3 preto 30 cm"
+      },
+
+      "430463424671": {
+        model: "Redonda",
+        color: "Preto",
+        size: 25,
+        pieces: 3,
+        description: "Kit 3 preto 25 cm"
+      },
+
+      "216387569151": {
+        model: "Redonda",
+        color: "Branco",
+        size: 16,
+        pieces: 3,
+        description: "Kit 3 branco 16 cm"
+      },
+
+      /*
+      Kits com 3 diamante
+      */
+
+      "360463511208": {
+        model: "Diamante",
+        color: "Branco",
+        size: 20,
+        pieces: 3,
+        description: "Diamante branco 20 cm"
+      },
+
+      "360463511209": {
+        model: "Diamante",
+        color: "Branco",
+        size: 25,
+        pieces: 3,
+        description: "Diamante branco 25 cm"
+      },
+
+      "360463511210": {
+        model: "Diamante",
+        color: "Branco",
+        size: 30,
+        pieces: 3,
+        description: "Diamante branco 30 cm"
+      },
+
+      "360463511211": {
+        model: "Diamante",
+        color: "Preto",
+        size: 20,
+        pieces: 3,
+        description: "Diamante preto 20 cm"
+      },
+
+      "360463511212": {
+        model: "Diamante",
+        color: "Preto",
+        size: 25,
+        pieces: 3,
+        description: "Diamante preto 25 cm"
+      },
+
+      "360463511213": {
+        model: "Diamante",
+        color: "Preto",
+        size: 30,
+        pieces: 3,
+        description: "Diamante preto 30 cm"
+      }
+    };
+
+    /*
+    =====================================================
+    ESTADO
+    =====================================================
+    */
+
+    let selectedFile = null;
+
+    /*
+    =====================================================
+    ELEMENTOS
+    =====================================================
+    */
+
+    const byId = (id) =>
+      document.getElementById(id);
+
+    function setText(id, value) {
+      const target = byId(id);
+
+      if (target) {
+        target.textContent = value;
+      }
+    }
+
+    function normalizeText(value) {
+      return String(value ?? "")
+        .trim()
+        .replace(/\s+/g, " ");
+    }
+
+    function normalizeSearch(value) {
+      return String(value ?? "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/branc0/g, "branco")
+        .replace(/\s+/g, " ");
+    }
+
+    function onlyDigits(value) {
+      return String(value ?? "")
+        .replace(/\D/g, "");
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/[&<>"']/g, (character) => {
+          const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+          };
+
+          return entities[character];
+        });
+    }
+
+    /*
+    =====================================================
+    LEITURA DO PDF
+    =====================================================
+    */
+
+    async function extractPdfLines(file) {
+      const data = await file.arrayBuffer();
+
+      const pdf = await pdfjsLib
+        .getDocument({
+          data
+        })
+        .promise;
+
+      const allLines = [];
+
+      for (
+        let pageNumber = 1;
+        pageNumber <= pdf.numPages;
+        pageNumber++
+      ) {
+        const page =
+          await pdf.getPage(pageNumber);
+
+        const content =
+          await page.getTextContent();
+
+        const positionedItems =
+          content.items
+            .filter((item) => {
+              return normalizeText(item.str);
+            })
+            .map((item) => {
+              return {
+                text: normalizeText(item.str),
+                x: item.transform[4],
+                y: item.transform[5]
+              };
+            });
+
+        positionedItems.sort((a, b) => {
+          const yDifference = b.y - a.y;
+
+          if (Math.abs(yDifference) > 2) {
+            return yDifference;
+          }
+
+          return a.x - b.x;
+        });
+
+        const pageLines = [];
+
+        positionedItems.forEach((item) => {
+          let line = pageLines.find((existingLine) => {
+            return Math.abs(
+              existingLine.y - item.y
+            ) <= 2;
+          });
+
+          if (!line) {
+            line = {
+              y: item.y,
+              items: []
+            };
+
+            pageLines.push(line);
+          }
+
+          line.items.push(item);
+        });
+
+        pageLines
+          .sort((a, b) => b.y - a.y)
+          .forEach((line) => {
+            const text = line.items
+              .sort((a, b) => a.x - b.x)
+              .map((item) => item.text)
+              .join(" ")
+              .replace(/\s+/g, " ")
+              .trim();
+
+            if (text) {
+              allLines.push(text);
+            }
+          });
+      }
+
+      return allLines;
+    }
+
+    function isPdfHeaderOrFooter(line) {
+      const text = normalizeSearch(line);
+
+      return (
+        text.includes("lista de separacao") ||
+        text.includes("qtd. de pedidos") ||
+        text.includes("qtd. de sku") ||
+        text.includes("total(itens)") ||
+        text.includes("titulo & variacao") ||
+        text.includes("imprimir - upseller") ||
+        text.includes("app.upseller.com") ||
+        text === "sku" ||
+        text === "qtd." ||
+        text === "#"
+      );
+    }
+
+    function parseUpSellerPdf(lines) {
+      const rows = [];
+
+      const orderRegex =
+        /\b\d{6}[A-Z0-9]{6,}\b/i;
+
+      const internalCodeRegex =
+        /\bUP[A-Z0-9]+\b/i;
+
+      const skuRegex =
+        /\b\d{12}\b/;
+
+      let currentRow = null;
+
+      function finishCurrentRow() {
+        if (!currentRow) {
+          return;
+        }
+
+        if (
+          currentRow.order &&
+          currentRow.sku
+        ) {
+          const joinedTitle =
+            currentRow.titleParts
+              .join(" ")
+              .replace(/\s+/g, " ")
+              .trim();
+
+          const variationMatch =
+            joinedTitle.match(
+              /\(([^()]+)\)\s*$/
+            );
+
+          const variation =
+            variationMatch
+              ? variationMatch[1]
+              : "";
+
+          const title =
+            joinedTitle
+              .replace(/\([^()]+\)\s*$/, "")
+              .trim();
+
+          rows.push({
+            order: currentRow.order,
+            sku: currentRow.sku,
+            title,
+            variation,
+            qty: currentRow.qty || 1
+          });
+        }
+
+        currentRow = null;
+      }
+
+      for (const originalLine of lines) {
+        if (isPdfHeaderOrFooter(originalLine)) {
+          continue;
+        }
+
+        let line = normalizeText(originalLine);
+
+        const orderMatch =
+          line.match(orderRegex);
+
+        /*
+        Uma nova linha de pedido começou.
+        */
+
+        if (orderMatch) {
+          finishCurrentRow();
+
+          currentRow = {
+            order: orderMatch[0],
+            sku: "",
+            qty: 0,
+            titleParts: []
+          };
+
+          line = line
+            .replace(/^\s*\d+\s+/, "")
+            .replace(orderMatch[0], "")
+            .replace(internalCodeRegex, "")
+            .trim();
+
+          if (line) {
+            currentRow.titleParts.push(line);
+          }
+
+          continue;
+        }
+
+        if (!currentRow) {
+          continue;
+        }
+
+        /*
+        Procura SKU de 12 dígitos.
+        */
+
+        const skuMatch =
+          line.match(skuRegex);
+
+        if (skuMatch) {
+          currentRow.sku = skuMatch[0];
+
+          const textAfterSku =
+            line
+              .replace(skuMatch[0], "")
+              .trim();
+
+          const quantityMatches =
+            textAfterSku.match(/\b\d+\b/g);
+
+          if (
+            quantityMatches &&
+            quantityMatches.length
+          ) {
+            currentRow.qty = Number(
+              quantityMatches[
+                quantityMatches.length - 1
+              ]
+            );
+          }
+
+          const titleBeforeSku =
+            line
+              .split(skuMatch[0])[0]
+              .trim();
+
+          if (titleBeforeSku) {
+            currentRow.titleParts.push(
+              titleBeforeSku
+            );
+          }
+
+          continue;
+        }
+
+        /*
+        Em alguns PDFs, a quantidade pode aparecer
+        sozinha depois do SKU.
+        */
+
+        if (
+          currentRow.sku &&
+          /^\d+$/.test(line)
+        ) {
+          currentRow.qty = Number(line);
+          continue;
+        }
+
+        /*
+        Ignora códigos internos do UpSeller.
+        */
+
+        line = line
+          .replace(internalCodeRegex, "")
+          .trim();
+
+        if (line) {
+          currentRow.titleParts.push(line);
+        }
+      }
+
+      finishCurrentRow();
+
+      return rows;
+    }
+
+    async function readPdf(file) {
+      const lines =
+        await extractPdfLines(file);
+
+      const rows =
+        parseUpSellerPdf(lines);
+
+      if (!rows.length) {
+        throw new Error(
+          "Não foi possível encontrar pedidos no PDF. Use uma Lista de Separação da UpSeller com texto selecionável."
+        );
+      }
+
+      return rows;
+    }
+
+    /*
+    =====================================================
+    LEITURA DO EXCEL E CSV
+    =====================================================
+    */
+
+    function findColumn(row, possibleNames) {
+      const entries = Object.entries(row);
+
+      for (const possibleName of possibleNames) {
+        const normalizedPossibleName =
+          normalizeSearch(possibleName);
+
+        const found = entries.find(
+          ([columnName, value]) => {
+            return (
+              normalizeSearch(columnName) ===
+                normalizedPossibleName &&
+              value !== ""
+            );
+          }
+        );
+
+        if (found) {
+          return found[1];
+        }
+      }
+
+      return "";
+    }
+
+    async function readSpreadsheet(file) {
+      const data =
+        await file.arrayBuffer();
+
+      const workbook =
+        XLSX.read(data, {
+          type: "array"
+        });
+
+      const sheetName =
+        workbook.SheetNames.find((name) => {
+          return normalizeSearch(name) ===
+            "orders";
+        }) ||
+        workbook.SheetNames[0];
+
+      const worksheet =
+        workbook.Sheets[sheetName];
+
+      const rawRows =
+        XLSX.utils.sheet_to_json(
+          worksheet,
+          {
+            defval: "",
+            raw: false
+          }
+        );
+
+      const rows = rawRows
+        .map((row) => {
+          return {
+            order: normalizeText(
+              findColumn(row, [
+                "ID do pedido",
+                "Nº de Pedido",
+                "Número do pedido"
+              ])
+            ),
+
+            sku: onlyDigits(
+              findColumn(row, [
+                "SKU",
+                "Número de referência SKU",
+                "Nº de referência SKU",
+                "Model ID"
+              ])
+            ),
+
+            title: normalizeText(
+              findColumn(row, [
+                "Nome do Produto",
+                "Título do produto"
+              ])
+            ),
+
+            variation: normalizeText(
+              findColumn(row, [
+                "Nome da Variação",
+                "Variação"
+              ])
+            ),
+
+            qty: Number(
+              findColumn(row, [
+                "Quantidade",
+                "Qtd.",
+                "Qtd"
+              ])
+            ) || 1
+          };
+        })
+        .filter((row) => {
+          return (
+            row.order ||
+            row.sku ||
+            row.title
+          );
+        });
+
+      if (!rows.length) {
+        throw new Error(
+          "Nenhum pedido foi encontrado na planilha."
+        );
+      }
+
+      return rows;
+    }
+
+    /*
+    =====================================================
+    PROCESSAMENTO
+    =====================================================
+    */
+
+    function createProduction() {
+      return {
+        round: {
+          white: {
+            15: 0,
+            16: 0,
+            20: 0,
+            25: 0,
+            30: 0
+          },
+
+          black: {
+            15: 0,
+            16: 0,
+            20: 0,
+            25: 0,
+            30: 0
+          }
+        },
+
+        diamond: {
+          white: {
+            20: 0,
+            25: 0,
+            30: 0
+          },
+
+          black: {
+            20: 0,
+            25: 0,
+            30: 0
+          }
+        },
+
+        hooks: {
+          white: 0,
+          black: 0
+        }
+      };
+    }
+
+    function processRows(rows) {
+      const production =
+        createProduction();
+
+      const reviews = [];
+      const orders = new Set();
+
+      let totalPieces = 0;
+
+      rows.forEach((row) => {
+        if (row.order) {
+          orders.add(row.order);
+        }
+
+        const product =
+          CATALOG[row.sku];
+
+        if (!product) {
+          reviews.push({
+            ...row,
+            reason: row.sku
+              ? "SKU ainda não cadastrado"
+              : "SKU não encontrado"
+          });
+
+          return;
+        }
+
+        const quantity =
+          Math.max(
+            1,
+            Number(row.qty) || 1
+          );
+
+        const pieces =
+          quantity *
+          product.pieces;
+
+        totalPieces += pieces;
+
+        const colorKey =
+          normalizeSearch(product.color)
+            .includes("preto")
+            ? "black"
+            : "white";
+
+        if (product.model === "Redonda") {
+          if (
+            Object.hasOwn(
+              production.round[colorKey],
+              product.size
+            )
+          ) {
+            production.round[colorKey][
+              product.size
+            ] += pieces;
+          }
+
+          return;
+        }
+
+        if (product.model === "Diamante") {
+          if (
+            Object.hasOwn(
+              production.diamond[colorKey],
+              product.size
+            )
+          ) {
+            production.diamond[colorKey][
+              product.size
+            ] += pieces;
+          }
+
+          return;
+        }
+
+        if (product.model === "Gancho") {
+          production.hooks[colorKey] +=
+            pieces;
+        }
+      });
+
+      setText(
+        "ordersMetric",
+        orders.size || rows.length
+      );
+
+      setText(
+        "piecesMetric",
+        totalPieces
+      );
+
+      setText(
+        "reviewMetric",
+        reviews.length
+      );
+
+      setText(
+        "reviewCount",
+        reviews.length
+      );
+
+      byId("printButton").disabled =
+        totalPieces === 0;
+
+      renderProduction(
+        production,
+        totalPieces
+      );
+
+      renderReviews(reviews);
+    }
+
+    /*
+    =====================================================
+    EXIBIÇÃO DOS RESULTADOS
+    =====================================================
+    */
+
+    function sumValues(object) {
+      return Object
+        .values(object)
+        .reduce((sum, value) => {
+          return sum + value;
+        }, 0);
+    }
+
+    function renderProduction(
+      production,
+      totalPieces
+    ) {
+      const roundWhiteTotal =
+        sumValues(
+          production.round.white
+        );
+
+      const roundBlackTotal =
+        sumValues(
+          production.round.black
+        );
+
+      const roundTotal =
+        roundWhiteTotal +
+        roundBlackTotal;
+
+      const diamondWhiteTotal =
+        sumValues(
+          production.diamond.white
+        );
+
+      const diamondBlackTotal =
+        sumValues(
+          production.diamond.black
+        );
+
+      const diamondTotal =
+        diamondWhiteTotal +
+        diamondBlackTotal;
+
+      const hookTotal =
+        production.hooks.white +
+        production.hooks.black;
+
+      /*
+      Redondas
+      */
+
+      [15, 16, 20, 25, 30]
+        .forEach((size) => {
+          setText(
+            `roundWhite${size}`,
+            production.round.white[size]
+          );
+
+          setText(
+            `roundBlack${size}`,
+            production.round.black[size]
+          );
+        });
+
+      setText(
+        "roundWhiteTotal",
+        roundWhiteTotal
+      );
+
+      setText(
+        "roundBlackTotal",
+        roundBlackTotal
+      );
+
+      setText(
+        "roundTotal",
+        `${roundTotal} peças`
+      );
+
+      /*
+      Diamantes
+      */
+
+      [20, 25, 30]
+        .forEach((size) => {
+          setText(
+            `diamondWhite${size}`,
+            production.diamond.white[size]
+          );
+
+          setText(
+            `diamondBlack${size}`,
+            production.diamond.black[size]
+          );
+        });
+
+      setText(
+        "diamondWhiteTotal",
+        diamondWhiteTotal
+      );
+
+      setText(
+        "diamondBlackTotal",
+        diamondBlackTotal
+      );
+
+      setText(
+        "diamondTotal",
+        `${diamondTotal} peças`
+      );
+
+      /*
+      Ganchos
+      */
+
+      setText(
+        "hookWhite",
+        production.hooks.white
+      );
+
+      setText(
+        "hookBlack",
+        production.hooks.black
+      );
+
+      setText(
+        "hookTotal",
+        `${hookTotal} unidades`
+      );
+
+      byId("emptyState")
+        .classList
+        .toggle(
+          "hidden",
+          totalPieces > 0
+        );
+
+      byId("productionResult")
+        .classList
+        .toggle(
+          "hidden",
+          totalPieces === 0
+        );
+
+      byId("roundPanel")
+        .classList
+        .toggle(
+          "hidden",
+          roundTotal === 0
+        );
+
+      byId("diamondPanel")
+        .classList
+        .toggle(
+          "hidden",
+          diamondTotal === 0
+        );
+
+      byId("hookPanel")
+        .classList
+        .toggle(
+          "hidden",
+          hookTotal === 0
+        );
+    }
+
+    function renderReviews(reviews) {
+      const body =
+        byId("reviewBody");
+
+      body.innerHTML = "";
+
+      if (!reviews.length) {
+        byId("reviewEmpty")
+          .classList
+          .remove("hidden");
+
+        byId("reviewTableWrapper")
+          .classList
+          .add("hidden");
+
+        return;
+      }
+
+      byId("reviewEmpty")
+        .classList
+        .add("hidden");
+
+      byId("reviewTableWrapper")
+        .classList
+        .remove("hidden");
+
+      reviews.forEach((row) => {
+        const html = `
+          <tr>
+            <td>
+              ${escapeHtml(row.order || "—")}
+            </td>
+
+            <td>
+              ${escapeHtml(row.sku || "Não encontrado")}
+            </td>
+
+            <td>
+              ${escapeHtml(row.title || "—")}
+            </td>
+
+            <td>
+              ${escapeHtml(row.variation || "—")}
+            </td>
+
+            <td>
+              ${row.qty || 1}
+            </td>
+
+            <td class="warning">
+              ${escapeHtml(row.reason)}
+            </td>
+          </tr>
+        `;
+
+        body.insertAdjacentHTML(
+          "beforeend",
+          html
+        );
+      });
+    }
+
+    /*
+    =====================================================
+    SELEÇÃO E PROCESSAMENTO DO ARQUIVO
+    =====================================================
+    */
+
+    function selectFile(file) {
+      selectedFile = file || null;
+
+      byId("processButton").disabled =
+        !selectedFile;
+
+      byId("fileStatus").textContent =
+        selectedFile
+          ? `Arquivo selecionado: ${selectedFile.name}`
+          : "Nenhum arquivo selecionado.";
+    }
+
+    async function processSelectedFile() {
+      if (!selectedFile) {
+        return;
+      }
+
+      const button =
+        byId("processButton");
+
+      try {
+        button.disabled = true;
+        button.textContent =
+          "Lendo arquivo...";
+
+        byId("fileStatus").textContent =
+          "Processando o arquivo. Aguarde...";
+
+        const fileName =
+          selectedFile.name.toLowerCase();
+
+        let rows = [];
+
+        if (fileName.endsWith(".pdf")) {
+          rows =
+            await readPdf(selectedFile);
+        } else {
+          rows =
+            await readSpreadsheet(
+              selectedFile
+            );
+        }
+
+        processRows(rows);
+
+        byId("fileStatus").textContent =
+          `${rows.length} pedido(s) encontrado(s) e processado(s).`;
+      } catch (error) {
+        console.error(error);
+
+        byId("fileStatus").textContent =
+          "Erro ao processar o arquivo.";
+
+        alert(
+          error.message ||
+          "Não foi possível processar o arquivo."
+        );
+      } finally {
+        button.disabled = false;
+        button.textContent =
+          "Processar arquivo";
+      }
+    }
+
+    function clearSystem() {
+      selectedFile = null;
+
+      byId("fileInput").value = "";
+
+      selectFile(null);
+
+      processRows([]);
+    }
+
+    /*
+    =====================================================
+    EVENTOS
+    =====================================================
+    */
+
+    byId("fileInput")
+      .addEventListener(
+        "change",
+        (event) => {
+          selectFile(
+            event.target.files[0]
+          );
+        }
+      );
+
+    byId("processButton")
+      .addEventListener(
+        "click",
+        processSelectedFile
+      );
+
+    byId("clearButton")
+      .addEventListener(
+        "click",
+        clearSystem
+      );
+
+    byId("printButton")
+      .addEventListener(
+        "click",
+        () => {
+          window.print();
+        }
+      );
+
+    byId("demoButton")
+      .addEventListener(
+        "click",
+        () => {
+          processRows([
+            {
+              order: "DEMO-001",
+              sku: "430463424669",
+              title:
+                "Kit 3 Prateleiras de Canto Meia Lua",
+              variation:
+                "BRANCO 30 CM",
+              qty: 2
+            },
+
+            {
+              order: "DEMO-002",
+              sku: "292651491140",
+              title:
+                "Prateleira unitária",
+              variation:
+                "BRANCO 30 CM",
+              qty: 2
+            },
+
+            {
+              order: "DEMO-003",
+              sku: "360463511212",
+              title:
+                "Kit 3 Diamante",
+              variation:
+                "PRETO 25 CM",
+              qty: 1
+            }
+          ]);
+        }
+      );
+
+    const dropzone =
+      byId("dropzone");
+
+    [
+      "dragenter",
+      "dragover"
+    ].forEach((eventName) => {
+      dropzone.addEventListener(
+        eventName,
+        (event) => {
+          event.preventDefault();
+
+          dropzone.classList.add(
+            "dragging"
+          );
+        }
+      );
+    });
+
+    [
+      "dragleave",
+      "drop"
+    ].forEach((eventName) => {
+      dropzone.addEventListener(
+        eventName,
+        (event) => {
+          event.preventDefault();
+
+          dropzone.classList.remove(
+            "dragging"
+          );
+        }
+      );
+    });
+
+    dropzone.addEventListener(
+      "drop",
+      (event) => {
+        const file =
+          event.dataTransfer.files[0];
+
+        if (!file) {
+          return;
+        }
+
+        const acceptedExtensions = [
+          ".pdf",
+          ".xlsx",
+          ".xls",
+          ".csv"
+        ];
+
+        const valid =
+          acceptedExtensions.some(
+            (extension) => {
+              return file.name
+                .toLowerCase()
+                .endsWith(extension);
+            }
+          );
+
+        if (!valid) {
+          alert(
+            "Envie um PDF, Excel ou CSV."
+          );
+
+          return;
+        }
+
+        selectFile(file);
+      }
+    );
+
+    /*
+    Estado inicial
+    */
+
+    processRows([]);
+  </script>
 </body>
 </html>
