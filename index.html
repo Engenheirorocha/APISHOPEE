@@ -7,19 +7,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Produção Shopee / UpSeller</title>
-
-
-<!-- Biblioteca Excel -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-
-<!-- Biblioteca PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
+<title>Produção Shopee - Organizador</title>
 
 <link rel="stylesheet" href="styles.css">
-
 
 </head>
 
@@ -35,28 +25,17 @@
 ORGANIZADOR DE PRODUÇÃO
 </span>
 
-
 <h1>
-Produção do Dia
+Produção Shopee
 </h1>
 
-
 <p>
-Envie PDF da UpSeller ou planilha da Shopee
-e transforme pedidos em produção.
+Envie a lista de separação do UpSeller e transforme pedidos em peças reais.
 </p>
 
 </div>
 
-
-<div class="badge">
-PDF + Excel
-</div>
-
-
 </header>
-
-
 
 
 
@@ -64,14 +43,7 @@ PDF + Excel
 
 
 
-<section class="upload-box">
-
-
-<div class="upload-info">
-
-<span class="step">
-PASSO 1
-</span>
+<section class="card upload">
 
 
 <h2>
@@ -80,34 +52,22 @@ Enviar arquivo
 
 
 <p>
-Aceita:
-<br>
-✔ PDF UpSeller
-<br>
-✔ Excel Shopee
-<br>
-✔ CSV
+Aceita PDF da UpSeller.
 </p>
 
 
-</div>
+<div class="dropzone" id="dropzone">
 
 
-
-
-
-<label
-class="dropzone"
-id="dropzone"
+<input 
+type="file"
+id="fileInput"
+accept=".pdf"
+hidden
 >
 
 
-<input
-id="fileInput"
-type="file"
-accept=".pdf,.xlsx,.xls,.csv"
-/>
-
+<label for="fileInput">
 
 <div class="upload-icon">
 ↑
@@ -115,48 +75,42 @@ accept=".pdf,.xlsx,.xls,.csv"
 
 
 <strong>
-Clique ou arraste o arquivo
+Clique ou arraste o PDF aqui
 </strong>
 
 
 <span>
-PDF, XLSX, XLS ou CSV
+Lista de Separação UpSeller
 </span>
 
 
 </label>
 
 
+</div>
 
 
 
 <div class="buttons">
 
 
-<button
+<button 
 id="processButton"
-class="btn primary"
 disabled
 >
-Processar arquivo
+
+Processar PDF
+
 </button>
 
 
-
-<button
-id="demoButton"
-class="btn secondary"
->
-Teste exemplo
-</button>
-
-
-
-<button
+<button 
 id="clearButton"
-class="btn light"
+class="secondary"
 >
+
 Limpar
+
 </button>
 
 
@@ -164,14 +118,12 @@ Limpar
 
 
 
+<div id="fileStatus">
 
-
-<p
-id="fileStatus"
-class="status"
->
 Nenhum arquivo selecionado.
-</p>
+
+</div>
+
 
 
 </section>
@@ -181,13 +133,10 @@ Nenhum arquivo selecionado.
 
 
 
+<section class="metrics">
 
 
-
-<section class="cards">
-
-
-<div class="card orange">
+<div class="metric orange">
 
 <span>
 Pedidos
@@ -201,7 +150,7 @@ Pedidos
 
 
 
-<div class="card blue">
+<div class="metric blue">
 
 <span>
 Peças para fabricar
@@ -215,10 +164,10 @@ Peças para fabricar
 
 
 
-<div class="card red">
+<div class="metric red">
 
 <span>
-Para revisar
+Produtos para revisar
 </span>
 
 <strong id="reviewMetric">
@@ -226,7 +175,6 @@ Para revisar
 </strong>
 
 </div>
-
 
 
 </section>
@@ -238,40 +186,23 @@ Para revisar
 
 
 
+<section 
+class="production card"
+id="productionResult"
+>
 
-<section class="production">
 
-
-<div class="production-header">
-
-
-<div>
-
-<span class="step">
-PASSO 2
-</span>
-
+<div class="title-row">
 
 <h2>
 Ordem de Fabricação
 </h2>
 
 
-<p>
-Quantidade real de peças.
-</p>
+<button id="printButton">
 
-
-</div>
-
-
-
-<button
-id="printButton"
-class="btn dark"
-disabled
->
 Imprimir
+
 </button>
 
 
@@ -283,63 +214,15 @@ Imprimir
 
 
 
-<div
-id="emptyState"
-class="empty"
->
+<!-- REDONDA -->
 
 
-<div>
-📦
-</div>
-
-
-<strong>
-Nenhuma produção calculada
-</strong>
-
-
-<p>
-Envie um arquivo para iniciar.
-</p>
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<div
-id="productionResult"
-class="hidden"
->
-
-
-
-<div class="panel">
-
-
-<div class="panel-title">
+<div class="category">
 
 
 <h3>
 Prateleira Redonda
 </h3>
-
-
-<span id="roundTotal">
-0 peças
-</span>
-
-
-</div>
-
-
 
 
 <table>
@@ -354,27 +237,31 @@ Cor
 </th>
 
 <th>
-15
+15 CM
 </th>
 
 <th>
-20
+16 CM
 </th>
 
 <th>
-25
+20 CM
 </th>
 
 <th>
-30
+25 CM
 </th>
 
 <th>
-Total
+30 CM
 </th>
+
+<th>
+TOTAL
+</th>
+
 
 </tr>
-
 
 </thead>
 
@@ -385,44 +272,39 @@ Total
 
 <tr>
 
-
 <td>
 ⚪ Branco
 </td>
-
 
 <td id="roundWhite15">
 0
 </td>
 
+<td id="roundWhite16">
+0
+</td>
 
 <td id="roundWhite20">
 0
 </td>
 
-
 <td id="roundWhite25">
 0
 </td>
-
 
 <td id="roundWhite30">
 0
 </td>
 
-
 <td id="roundWhiteTotal">
 0
 </td>
-
 
 </tr>
 
 
 
-
 <tr>
-
 
 <td>
 ⚫ Preto
@@ -433,21 +315,21 @@ Total
 0
 </td>
 
+<td id="roundBlack16">
+0
+</td>
 
 <td id="roundBlack20">
 0
 </td>
 
-
 <td id="roundBlack25">
 0
 </td>
 
-
 <td id="roundBlack30">
 0
 </td>
-
 
 <td id="roundBlackTotal">
 0
@@ -457,13 +339,13 @@ Total
 </tr>
 
 
+
 </tbody>
 
 
 </table>
 
 
-
 </div>
 
 
@@ -474,25 +356,15 @@ Total
 
 
 
-<div class="panel">
+<!-- DIAMANTE -->
 
 
-<div class="panel-title">
+<div class="category">
 
 
 <h3>
 Prateleira Diamante
 </h3>
-
-
-<span id="diamondTotal">
-0 peças
-</span>
-
-
-</div>
-
-
 
 
 <table>
@@ -507,19 +379,19 @@ Cor
 </th>
 
 <th>
-20
+20 CM
 </th>
 
 <th>
-25
+25 CM
 </th>
 
 <th>
-30
+30 CM
 </th>
 
 <th>
-Total
+TOTAL
 </th>
 
 </tr>
@@ -556,6 +428,7 @@ Total
 
 
 </tr>
+
 
 
 
@@ -603,64 +476,134 @@ Total
 
 
 
-<div class="panel">
+<!-- GANCHOS -->
 
 
-<div class="panel-title">
+<div class="category">
 
 
 <h3>
-Ganchos Penduradores
+Ganchos
 </h3>
 
 
-<span id="hookTotal">
-0 unidades
-</span>
+<table>
 
 
-</div>
+<thead>
+
+<tr>
+
+<th>
+Modelo
+</th>
+
+<th>
+Quantidade
+</th>
+
+</tr>
+
+</thead>
 
 
 
+<tbody>
 
-<div class="hook-box">
 
+<tr>
 
-<div>
-⚪ Branco
+<td>
+⚪ Gancho Branco
+</td>
 
-<strong id="hookWhite">
+<td id="hookWhite">
 0
-</strong>
-
-</div>
+</td>
 
 
+</tr>
 
-<div>
-⚫ Preto
 
-<strong id="hookBlack">
+
+<tr>
+
+<td>
+⚫ Gancho Preto
+</td>
+
+<td id="hookBlack">
 0
-</strong>
+</td>
+
+
+</tr>
+
+
+
+</tbody>
+
+
+</table>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- OUTROS -->
+
+
+<div class="category">
+
+
+<h3>
+Outros Produtos
+</h3>
+
+
+<table>
+
+
+<thead>
+
+<tr>
+
+<th>
+Produto
+</th>
+
+<th>
+Quantidade
+</th>
+
+</tr>
+
+
+</thead>
+
+
+<tbody id="othersBody">
+
+
+</tbody>
+
+
+</table>
+
 
 </div>
 
 
-</div>
 
 
 
-</div>
-
-
-
-
-
-
-
-</div>
 
 
 </section>
@@ -673,12 +616,22 @@ Ganchos Penduradores
 
 
 
-<section class="review">
+<!-- REVISÃO -->
+
+
+<section 
+class="card review"
+>
 
 
 <h2>
-Produtos para revisão
+Produtos não cadastrados
 </h2>
+
+
+<p>
+Itens encontrados no PDF que precisam de cadastro.
+</p>
 
 
 <table>
@@ -689,10 +642,6 @@ Produtos para revisão
 <tr>
 
 <th>
-Pedido
-</th>
-
-<th>
 SKU
 </th>
 
@@ -701,10 +650,11 @@ Produto
 </th>
 
 <th>
-Motivo
+Quantidade
 </th>
 
 </tr>
+
 
 </thead>
 
@@ -726,6 +676,7 @@ Motivo
 
 
 
+
 </main>
 
 
@@ -736,7 +687,7 @@ Motivo
 
 <footer>
 
-Sistema preparado para futura integração com API Shopee.
+Sistema preparado para integração futura com API Shopee.
 
 </footer>
 
@@ -745,10 +696,11 @@ Sistema preparado para futura integração com API Shopee.
 
 
 
-<!-- ÚNICO JAVASCRIPT DO SISTEMA -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
 
 <script src="app.js"></script>
-
 
 
 </body>
