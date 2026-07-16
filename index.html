@@ -1,186 +1,587 @@
-<section class="production-dashboard">
-  <div class="dashboard-header">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Produção Shopee</title>
+
+  <link
+    rel="stylesheet"
+    href="./styles.css"
+  >
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
+    defer
+  ></script>
+
+  <script
+    src="./app.js"
+    defer
+  ></script>
+</head>
+
+<body>
+  <header class="topbar">
     <div>
-      <span class="dashboard-label">PRODUÇÃO DO DIA</span>
-      <h2>Ordem de fabricação</h2>
-      <p>Quantidade total de peças separada por modelo, cor e medida.</p>
+      <span class="eyebrow">ORGANIZADOR DE PRODUÇÃO</span>
+
+      <h1>Produção do dia</h1>
+
+      <p>
+        Envie a planilha da Shopee para calcular automaticamente
+        as peças que precisam ser fabricadas.
+      </p>
     </div>
 
-    <button id="printBtn" class="print-button" disabled>
-      Imprimir produção
-    </button>
-  </div>
+    <div class="status-badge">
+      Versão manual
+    </div>
+  </header>
 
-  <div class="summary-cards">
-    <article class="summary-card summary-orange">
-      <span>Pedidos</span>
-      <strong id="metricOrders">0</strong>
-    </article>
+  <main class="container">
+    <section class="upload-card">
+      <div class="upload-text">
+        <span class="step-label">PASSO 1</span>
 
-    <article class="summary-card summary-blue">
-      <span>Peças para fabricar</span>
-      <strong id="metricPieces">0</strong>
-    </article>
+        <h2>Enviar planilha</h2>
 
-    <article class="summary-card summary-red">
-      <span>Pendências</span>
-      <strong id="metricReview">0</strong>
-    </article>
-  </div>
-
-  <div id="productionEmpty" class="production-empty">
-    <strong>Nenhuma planilha processada</strong>
-    <span>Envie a planilha da Shopee para visualizar a produção.</span>
-  </div>
-
-  <div id="productionResult" class="production-result hidden">
-
-    <section class="product-panel round-panel">
-      <div class="product-panel-title">
-        <div class="product-icon">●</div>
-
-        <div>
-          <h3>Prateleira redonda</h3>
-          <p>Prateleiras meia-lua</p>
-        </div>
-
-        <strong id="roundTotal" class="panel-total">0 peças</strong>
+        <p>
+          Aceita arquivos Excel e CSV exportados da Shopee.
+        </p>
       </div>
 
-      <div class="production-table-wrapper">
-        <table class="production-table">
-          <thead>
-            <tr>
-              <th>Cor</th>
-              <th>20 cm</th>
-              <th>25 cm</th>
-              <th>30 cm</th>
-              <th>Total</th>
-            </tr>
-          </thead>
+      <label
+        for="fileInput"
+        id="dropzone"
+        class="dropzone"
+      >
+        <input
+          id="fileInput"
+          type="file"
+          accept=".xlsx,.xls,.csv"
+        >
 
-          <tbody>
-            <tr>
-              <td>
-                <span class="color-label">
-                  <span class="color-circle white-circle"></span>
-                  Branco
-                </span>
-              </td>
+        <span class="upload-icon">⬆</span>
 
-              <td id="roundWhite20">0</td>
-              <td id="roundWhite25">0</td>
-              <td id="roundWhite30">0</td>
-              <td id="roundWhiteTotal" class="row-total">0</td>
-            </tr>
+        <strong>
+          Clique ou arraste a planilha aqui
+        </strong>
 
-            <tr>
-              <td>
-                <span class="color-label">
-                  <span class="color-circle black-circle"></span>
-                  Preto
-                </span>
-              </td>
+        <small>
+          XLSX, XLS ou CSV
+        </small>
+      </label>
 
-              <td id="roundBlack20">0</td>
-              <td id="roundBlack25">0</td>
-              <td id="roundBlack30">0</td>
-              <td id="roundBlackTotal" class="row-total">0</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="upload-actions">
+        <button
+          id="processBtn"
+          type="button"
+          class="button button-primary"
+          disabled
+        >
+          Processar planilha
+        </button>
+
+        <button
+          id="demoBtn"
+          type="button"
+          class="button button-secondary"
+        >
+          Testar exemplo
+        </button>
+
+        <button
+          id="clearBtn"
+          type="button"
+          class="button button-light"
+        >
+          Limpar
+        </button>
       </div>
+
+      <p
+        id="fileStatus"
+        class="file-status"
+      >
+        Nenhum arquivo selecionado.
+      </p>
     </section>
 
-    <section class="product-panel diamond-panel">
-      <div class="product-panel-title">
-        <div class="product-icon diamond-icon">◆</div>
+    <section class="summary-grid">
+      <article class="summary-card card-orange">
+        <span>Pedidos</span>
+        <strong id="metricOrders">0</strong>
+      </article>
 
-        <div>
-          <h3>Prateleira diamante</h3>
-          <p>Prateleiras de canto tipo diamante</p>
-        </div>
+      <article class="summary-card card-blue">
+        <span>Peças para fabricar</span>
+        <strong id="metricPieces">0</strong>
+      </article>
 
-        <strong id="diamondTotal" class="panel-total">0 peças</strong>
-      </div>
-
-      <div class="production-table-wrapper">
-        <table class="production-table">
-          <thead>
-            <tr>
-              <th>Cor</th>
-              <th>20 cm</th>
-              <th>25 cm</th>
-              <th>30 cm</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td>
-                <span class="color-label">
-                  <span class="color-circle white-circle"></span>
-                  Branco
-                </span>
-              </td>
-
-              <td id="diamondWhite20">0</td>
-              <td id="diamondWhite25">0</td>
-              <td id="diamondWhite30">0</td>
-              <td id="diamondWhiteTotal" class="row-total">0</td>
-            </tr>
-
-            <tr>
-              <td>
-                <span class="color-label">
-                  <span class="color-circle black-circle"></span>
-                  Preto
-                </span>
-              </td>
-
-              <td id="diamondBlack20">0</td>
-              <td id="diamondBlack25">0</td>
-              <td id="diamondBlack30">0</td>
-              <td id="diamondBlackTotal" class="row-total">0</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <article class="summary-card card-red">
+        <span>Para revisar</span>
+        <strong id="metricReview">0</strong>
+      </article>
     </section>
 
-    <section class="product-panel hook-panel">
-      <div class="product-panel-title">
-        <div class="product-icon hook-icon">J</div>
-
+    <section class="production-section">
+      <div class="section-header">
         <div>
-          <h3>Ganchos penduradores</h3>
-          <p>Quantidade separada por cor</p>
+          <span class="step-label">PASSO 2</span>
+
+          <h2>Ordem de fabricação</h2>
+
+          <p>
+            Quantidades já convertidas de unitário, kit com 2
+            e kit com 3 para peças físicas.
+          </p>
         </div>
 
-        <strong id="hookTotal" class="panel-total">0 unidades</strong>
+        <button
+          id="printBtn"
+          type="button"
+          class="button button-dark"
+          disabled
+        >
+          Imprimir produção
+        </button>
       </div>
 
-      <div class="hook-grid">
-        <article class="hook-card white-hook">
-          <span class="color-circle white-circle"></span>
+      <div
+        id="productionEmpty"
+        class="empty-state"
+      >
+        <span class="empty-icon">📦</span>
 
-          <div>
-            <span>Branco</span>
-            <strong id="hookWhite">0</strong>
+        <strong>
+          Nenhuma planilha processada
+        </strong>
+
+        <p>
+          Envie a planilha para visualizar a produção do dia.
+        </p>
+      </div>
+
+      <div
+        id="productionResult"
+        class="production-result hidden"
+      >
+        <article
+          id="roundPanel"
+          class="product-panel"
+        >
+          <div class="product-panel-header">
+            <div class="product-title">
+              <span class="product-symbol symbol-round">●</span>
+
+              <div>
+                <h3>Prateleira redonda</h3>
+                <p>Modelo meia-lua</p>
+              </div>
+            </div>
+
+            <strong
+              id="roundTotal"
+              class="total-badge"
+            >
+              0 peças
+            </strong>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="production-table">
+              <thead>
+                <tr>
+                  <th>Cor</th>
+                  <th>16 cm</th>
+                  <th>20 cm</th>
+                  <th>25 cm</th>
+                  <th>30 cm</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>
+                    <span class="color-name">
+                      <span class="color-dot dot-white"></span>
+                      Branco
+                    </span>
+                  </td>
+
+                  <td id="roundWhite16">0</td>
+                  <td id="roundWhite20">0</td>
+                  <td id="roundWhite25">0</td>
+                  <td id="roundWhite30">0</td>
+
+                  <td
+                    id="roundWhiteTotal"
+                    class="total-cell"
+                  >
+                    0
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <span class="color-name">
+                      <span class="color-dot dot-black"></span>
+                      Preto
+                    </span>
+                  </td>
+
+                  <td id="roundBlack16">0</td>
+                  <td id="roundBlack20">0</td>
+                  <td id="roundBlack25">0</td>
+                  <td id="roundBlack30">0</td>
+
+                  <td
+                    id="roundBlackTotal"
+                    class="total-cell"
+                  >
+                    0
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </article>
 
-        <article class="hook-card black-hook">
-          <span class="color-circle black-circle"></span>
+        <article
+          id="diamondPanel"
+          class="product-panel"
+        >
+          <div class="product-panel-header">
+            <div class="product-title">
+              <span class="product-symbol symbol-diamond">◆</span>
 
-          <div>
-            <span>Preto</span>
-            <strong id="hookBlack">0</strong>
+              <div>
+                <h3>Prateleira diamante</h3>
+                <p>Modelo canto diamante</p>
+              </div>
+            </div>
+
+            <strong
+              id="diamondTotal"
+              class="total-badge"
+            >
+              0 peças
+            </strong>
           </div>
+
+          <div class="table-wrapper">
+            <table class="production-table">
+              <thead>
+                <tr>
+                  <th>Cor</th>
+                  <th>20 cm</th>
+                  <th>25 cm</th>
+                  <th>30 cm</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>
+                    <span class="color-name">
+                      <span class="color-dot dot-white"></span>
+                      Branco
+                    </span>
+                  </td>
+
+                  <td id="diamondWhite20">0</td>
+                  <td id="diamondWhite25">0</td>
+                  <td id="diamondWhite30">0</td>
+
+                  <td
+                    id="diamondWhiteTotal"
+                    class="total-cell"
+                  >
+                    0
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <span class="color-name">
+                      <span class="color-dot dot-black"></span>
+                      Preto
+                    </span>
+                  </td>
+
+                  <td id="diamondBlack20">0</td>
+                  <td id="diamondBlack25">0</td>
+                  <td id="diamondBlack30">0</td>
+
+                  <td
+                    id="diamondBlackTotal"
+                    class="total-cell"
+                  >
+                    0
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article
+          id="hookPanel"
+          class="product-panel"
+        >
+          <div class="product-panel-header">
+            <div class="product-title">
+              <span class="product-symbol symbol-hook">J</span>
+
+              <div>
+                <h3>Ganchos penduradores</h3>
+                <p>Quantidade total por cor</p>
+              </div>
+            </div>
+
+            <strong
+              id="hookTotal"
+              class="total-badge"
+            >
+              0 unidades
+            </strong>
+          </div>
+
+          <div class="hook-grid">
+            <div class="hook-card">
+              <span class="color-dot dot-white"></span>
+
+              <div>
+                <span>Branco</span>
+                <strong id="hookWhite">0</strong>
+              </div>
+            </div>
+
+            <div class="hook-card hook-card-dark">
+              <span class="color-dot dot-black"></span>
+
+              <div>
+                <span>Preto</span>
+                <strong id="hookBlack">0</strong>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article
+          id="otherPanel"
+          class="product-panel hidden"
+        >
+          <div class="product-panel-header">
+            <div class="product-title">
+              <span class="product-symbol symbol-other">+</span>
+
+              <div>
+                <h3>Outros produtos</h3>
+                <p>Itens que não pertencem aos grupos principais</p>
+              </div>
+            </div>
+
+            <strong
+              id="otherTotal"
+              class="total-badge"
+            >
+              0 unidades
+            </strong>
+          </div>
+
+          <div
+            id="otherProducts"
+            class="other-products"
+          ></div>
         </article>
       </div>
     </section>
 
-  </div>
-</section>
+    <details class="details-box">
+      <summary>
+        Ver produtos que precisam de revisão
+        <span
+          id="reviewSummaryCount"
+          class="summary-count"
+        >
+          0
+        </span>
+      </summary>
+
+      <div
+        id="reviewEmpty"
+        class="small-empty"
+      >
+        Nenhum produto pendente.
+      </div>
+
+      <div
+        id="reviewWrap"
+        class="table-wrapper hidden"
+      >
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Pedido</th>
+              <th>Produto</th>
+              <th>Variação</th>
+              <th>ID/SKU encontrado</th>
+              <th>Quantidade</th>
+              <th>Motivo</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+
+          <tbody id="reviewBody"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <details class="details-box">
+      <summary>
+        Configuração dos produtos
+      </summary>
+
+      <div class="config-content">
+        <p class="config-description">
+          Cadastre aqui um produto novo apenas quando ele aparecer
+          na área de revisão.
+        </p>
+
+        <form
+          id="catalogForm"
+          class="catalog-form"
+        >
+          <label>
+            Model ID ou SKU
+
+            <input
+              id="modelId"
+              type="text"
+              placeholder="Ex.: 430463424669"
+              required
+            >
+          </label>
+
+          <label>
+            Tipo do produto
+
+            <select
+              id="model"
+              required
+            >
+              <option value="">Selecione</option>
+              <option value="Redonda">Prateleira redonda</option>
+              <option value="Diamante">Prateleira diamante</option>
+              <option value="Gancho">Gancho pendurador</option>
+              <option value="Outro">Outro produto</option>
+            </select>
+          </label>
+
+          <label>
+            Cor
+
+            <select
+              id="color"
+              required
+            >
+              <option value="">Selecione</option>
+              <option value="Branco">Branco</option>
+              <option value="Preto">Preto</option>
+              <option value="Outra">Outra</option>
+            </select>
+          </label>
+
+          <label>
+            Medida
+
+            <input
+              id="size"
+              type="text"
+              placeholder="Ex.: 30 cm"
+            >
+          </label>
+
+          <label>
+            Peças por venda
+
+            <input
+              id="piecesPerSale"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="Ex.: 3"
+              required
+            >
+          </label>
+
+          <label>
+            Observação
+
+            <input
+              id="detail"
+              type="text"
+              placeholder="Ex.: Kit 3 ou unitária"
+            >
+          </label>
+
+          <button
+            type="submit"
+            class="button button-primary save-button"
+          >
+            Salvar produto
+          </button>
+        </form>
+
+        <div class="config-actions">
+          <button
+            id="exportCatalogBtn"
+            type="button"
+            class="button button-secondary"
+          >
+            Fazer backup do cadastro
+          </button>
+
+          <button
+            id="resetCatalogBtn"
+            type="button"
+            class="button button-danger-outline"
+          >
+            Restaurar cadastro inicial
+          </button>
+        </div>
+
+        <div class="table-wrapper catalog-table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID/SKU</th>
+                <th>Produto</th>
+                <th>Cor</th>
+                <th>Medida</th>
+                <th>Peças por venda</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
+
+            <tbody id="catalogBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </main>
+
+  <footer class="footer">
+    Sistema manual preparado para futura integração com a API da Shopee.
+  </footer>
+</body>
+</html>
