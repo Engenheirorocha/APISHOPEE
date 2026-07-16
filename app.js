@@ -19,12 +19,13 @@ cor:"Branco",
 medida:30,
 pecas:1
 },
-
+  
 "292651491140":{
-modelo:"Redonda",
+modelo:"Diamante",
 cor:"Branco",
 medida:30,
 pecas:1
+
 },
 
 "209613874440":{
