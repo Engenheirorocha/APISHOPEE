@@ -409,6 +409,21 @@ texto(
 r.diamante["Branco_30"] || 0
 );
 
+  texto(
+"diamondWhiteTotal",
+(r.diamante["Branco_20"] || 0) +
+(r.diamante["Branco_25"] || 0) +
+(r.diamante["Branco_30"] || 0)
+);
+
+
+texto(
+"diamondBlackTotal",
+(r.diamante["Preto_20"] || 0) +
+(r.diamante["Preto_25"] || 0) +
+(r.diamante["Preto_30"] || 0)
+);
+
 
 texto(
 "diamondBlack20",
